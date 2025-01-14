@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MokeSell - Upload Item</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header>
+        <h1>MokeSell Marketplace</h1>
+        <nav>
+            <ul>
+                <li><a href="index.html">Home</a></li>
+                <li><a href="listings.html">Listings</a></li>
+                <li><a href="upload.html">Upload Item</a></li>
+                <li><a href="#about">About</a></li>
+                <li><a href="#contact">Contact</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        <section id="upload">
+            <h2>Upload Your Item</h2>
+            <form id="upload-form">
+                <label for="title">Item Title:</label>
+                <input type="text" id="title" required>
+
+                <label for="image">Upload Image:</label>
+                <input type="file" id="image" accept="image/*" required onchange="previewImage(event)">
+
+                <img id="image-preview" src="" alt="Image Preview" style="display: none; width: 100px; height: auto; margin-bottom: 10px;">
+
+                <label for="category">Category:</label>
+                <select id="category" required>
+                    <option value="electronics">Electronics</option>
+                    <option value="furniture">Furniture</option>
+                    <option value="clothing">Clothing</option>
+                    <option value="toys">Toys</option>
+                    <option value="books">Books</option>
+                    <option value="other">Other</option>
+                </select>
+
+                <label for="price">Price:</label>
+                <input type="number" id="price" required>
+
+                <label for="description">Description:</label>
+                <textarea id="description" required></textarea>
+
+                <label for="condition">Condition:</label>
+                <select id="condition" required>
+                    <option value="new">New</option>
+                    <option value="used">Used</option>
+                </select>
+
+                <button type="submit">Upload Item</button>
+            </form>
+        </section>
+    </main>
+
+    <footer>
+        <p>&copy; 2025 MokeSell. All rights reserved.</p>
+    </footer>
+
+    <script src="script.js"></script>
+    <script>
+        // Function to preview the uploaded image
+        function previewImage(event) {
+            const imagePreview = document.getElementById('image-preview');
+            imagePreview.src = URL.createObjectURL(event.target.files[0]);
+            imagePreview.style.display = 'block';
+        }
+    </script>
+</body>
+</html>
