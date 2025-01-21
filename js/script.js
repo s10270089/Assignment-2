@@ -1,8 +1,9 @@
-// Import the necessary Firebase modules
+// Firebase Modules
+import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/9.16.0/firebase-firestore.js";
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.16.0/firebase-auth.js";
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.16.0/firebase-app.js";
-import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, createUserWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/9.16.0/firebase-auth.js";
 
-// Initialise Firebase
+// Firebase configuration
 const firebaseConfig = {
   apiKey: "AIzaSyDqYtQAxeSDqaXdReUFdP2goqHfgTj0sNM",
   authDomain: "mokesellfed.firebaseapp.com",
@@ -13,8 +14,10 @@ const firebaseConfig = {
   measurementId: "G-EMD85073YC"
 };
 
+// Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
+const db = getFirestore(app);
 
 // Page-Specific Functionality
 document.addEventListener("DOMContentLoaded", () => {
@@ -33,7 +36,7 @@ document.addEventListener("DOMContentLoaded", () => {
           console.log("User logged in:", userCredential.user);
           window.location.href = "home.html";
         } catch (error) {
-          alert(error.message);
+          alert("Error: " + error.message);
         }
       });
     }
@@ -43,14 +46,46 @@ document.addEventListener("DOMContentLoaded", () => {
     if (signupForm) {
       signupForm.addEventListener("submit", async (e) => {
         e.preventDefault();
+
+        const username = document.getElementById("signup-username").value;
         const email = document.getElementById("signup-email").value;
         const password = document.getElementById("signup-password").value;
+        const confirmPassword = document.getElementById("signup-confirm-password").value;
+
+        // Check if passwords match
+        if (password !== confirmPassword) {
+          alert("Passwords do not match.");
+          return;
+        }
+
         try {
+          // Create user in Firebase Authentication
           const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-          console.log("User signed up:", userCredential.user);
+          const user = userCredential.user;
+
+          // Save additional data to Firestore
+          await setDoc(doc(db, "users", user.uid), {
+            username: username,
+            email: email,
+            createdAt: new Date().toISOString()
+          });
+
+          alert("Sign-up successful!");
           window.location.href = "home.html";
         } catch (error) {
-          alert(error.message);
+          alert("Error: " + error.message);
+        }
+      });
+
+      // Handle confirm password input validation
+      const passwordInput = document.getElementById("signup-password");
+      const confirmPasswordInput = document.getElementById("signup-confirm-password");
+
+      confirmPasswordInput.addEventListener("input", () => {
+        if (passwordInput.value !== confirmPasswordInput.value) {
+          confirmPasswordInput.style.borderColor = "red";
+        } else {
+          confirmPasswordInput.style.borderColor = "green";
         }
       });
     }
