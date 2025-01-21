@@ -81,3 +81,17 @@ document.getElementById('upload-form').addEventListener('submit', function(event
 if (document.getElementById('listing-container')) {
     window.onload = fetchListings;
 }
+
+const firebaseConfig = {
+    apiKey: "YOUR_API_KEY",
+    authDomain: "YOUR_AUTH_DOMAIN",
+    projectId: "YOUR_PROJECT_ID",
+  };
+  firebase.initializeApp(firebaseConfig);
+  
+  const auth = firebase.auth();
+  // Example: Sign up with email/password
+  auth.createUserWithEmailAndPassword(email, password)
+    .then(userCredential => console.log(userCredential))
+    .catch(error => console.error(error.message));
+  
