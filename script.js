@@ -92,11 +92,7 @@ const firebaseConfig = {
     appId: "1:165673734048:web:5e8c69745ebaefcc47dec5",
     measurementId: "G-EMD85073YC"
   };
-  firebase.initializeApp(firebaseConfig);
-  
-  const auth = firebase.auth();
-  // Example: Sign up with email/password
-  auth.createUserWithEmailAndPassword(email, password)
-    .then(userCredential => console.log(userCredential))
-    .catch(error => console.error(error.message));
+// Initialise Firebase
+const app = firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
   
