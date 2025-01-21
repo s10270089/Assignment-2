@@ -92,7 +92,54 @@ const firebaseConfig = {
     appId: "1:165673734048:web:5e8c69745ebaefcc47dec5",
     measurementId: "G-EMD85073YC"
   };
+  
 // Initialise Firebase
 const app = firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
+
+// Register
+document.getElementById("signup-form").addEventListener("submit", (e) => {
+    e.preventDefault();
+    const email = document.getElementById("signup-email").value;
+    const password = document.getElementById("signup-password").value;
+  
+    auth.createUserWithEmailAndPassword(email, password)
+      .then((userCredential) => {
+        console.log("User signed up:", userCredential.user);
+        alert("Sign-up successful!");
+      })
+      .catch((error) => {
+        console.error("Error signing up:", error.message);
+        alert(error.message);
+      });
+  });
+  // Login
+
+  document.getElementById("login-form").addEventListener("submit", (e) => {
+    e.preventDefault();
+    const email = document.getElementById("login-email").value;
+    const password = document.getElementById("login-password").value;
+  
+    auth.signInWithEmailAndPassword(email, password)
+      .then((userCredential) => {
+        console.log("User logged in:", userCredential.user);
+        alert("Login successful!");
+      })
+      .catch((error) => {
+        console.error("Error logging in:", error.message);
+        alert(error.message);
+      });
+  });
+  // Logout
+
+  document.getElementById("logout").addEventListener("click", () => {
+    auth.signOut()
+      .then(() => {
+        console.log("User logged out");
+        alert("Logged out successfully!");
+      })
+      .catch((error) => {
+        console.error("Error logging out:", error.message);
+      });
+  });
   
