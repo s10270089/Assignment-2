@@ -82,10 +82,15 @@ if (document.getElementById('listing-container')) {
     window.onload = fetchListings;
 }
 
+// For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
-    apiKey: "YOUR_API_KEY",
-    authDomain: "YOUR_AUTH_DOMAIN",
-    projectId: "YOUR_PROJECT_ID",
+    apiKey: "AIzaSyDqYtQAxeSDqaXdReUFdP2goqHfgTj0sNM",
+    authDomain: "mokesellfed.firebaseapp.com",
+    projectId: "mokesellfed",
+    storageBucket: "mokesellfed.firebasestorage.app",
+    messagingSenderId: "165673734048",
+    appId: "1:165673734048:web:5e8c69745ebaefcc47dec5",
+    measurementId: "G-EMD85073YC"
   };
   firebase.initializeApp(firebaseConfig);
   
