@@ -84,3 +84,25 @@ footer {
     background-color: #4CAF50;
     color: white;
 }
+
+input[type="date"],
+input[type="tel"] {
+    margin: 10px 0;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    width: 100%;
+}
+select, input[type="tel"] {
+    padding: 10px;
+    margin: 10px 0;
+    font-size: 16px;
+    width: 100%;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+select {
+    background-color: #f9f9f9;
+    appearance: none;
+}

@@ -1,5 +1,5 @@
 // Firebase Modules
-import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/9.16.0/firebase-firestore.js";
+import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/9.16.0/firebase-firestore.js";
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.16.0/firebase-auth.js";
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.16.0/firebase-app.js";
 
@@ -43,19 +43,40 @@ document.addEventListener("DOMContentLoaded", () => {
   } else if (currentPage === "signup") {
     // Sign-up page functionality
     const signupForm = document.getElementById("signup-form");
+
     if (signupForm) {
       signupForm.addEventListener("submit", async (e) => {
         e.preventDefault();
 
         const username = document.getElementById("signup-username").value;
         const email = document.getElementById("signup-email").value;
-        const password = document.getElementById("signup-password").value;
-        const confirmPassword = document.getElementById("signup-confirm-password").value;
+        const passwordInput = document.getElementById("signup-password");
+        const confirmPasswordInput = document.getElementById("signup-confirm-password");
+        
+        // Ensure password and confirmPassword are both strings
+        const password = passwordInput.value.trim();
+        const confirmPassword = confirmPasswordInput.value.trim();
 
-        // Check if passwords match
+        // Validate password match
         if (password !== confirmPassword) {
           alert("Passwords do not match.");
           return;
+        }
+
+        // Country code and phone number
+        const countryCode = document.getElementById("country-code").value;
+        const localNumber = document.getElementById("local-number").value;
+        const phoneNumber = `${countryCode}${localNumber}`;
+
+        // Validate phone number length
+        const phonePattern = /^[0-9]{6,15}$/;
+        const phoneValid = phonePattern.test(localNumber);
+        if (!phoneValid) {
+          document.getElementById("local-number").style.borderColor = "red";
+          alert("Please enter a valid phone number.");
+          return;
+        } else {
+          document.getElementById("local-number").style.borderColor = "green";
         }
 
         try {
@@ -67,6 +88,7 @@ document.addEventListener("DOMContentLoaded", () => {
           await setDoc(doc(db, "users", user.uid), {
             username: username,
             email: email,
+            phoneNumber: phoneNumber, // Store phone number in E.164 format
             createdAt: new Date().toISOString()
           });
 
@@ -74,18 +96,6 @@ document.addEventListener("DOMContentLoaded", () => {
           window.location.href = "home.html";
         } catch (error) {
           alert("Error: " + error.message);
-        }
-      });
-
-      // Handle confirm password input validation
-      const passwordInput = document.getElementById("signup-password");
-      const confirmPasswordInput = document.getElementById("signup-confirm-password");
-
-      confirmPasswordInput.addEventListener("input", () => {
-        if (passwordInput.value !== confirmPasswordInput.value) {
-          confirmPasswordInput.style.borderColor = "red";
-        } else {
-          confirmPasswordInput.style.borderColor = "green";
         }
       });
     }
@@ -99,7 +109,6 @@ document.addEventListener("DOMContentLoaded", () => {
         window.location.href = "index.html";
       }
     });
-
     const logoutButton = document.getElementById("logout");
     if (logoutButton) {
       logoutButton.addEventListener("click", async () => {
