@@ -41,64 +41,71 @@ document.addEventListener("DOMContentLoaded", () => {
       });
     }
   } else if (currentPage === "signup") {
-    // Sign-up page functionality
-    const signupForm = document.getElementById("signup-form");
+    const signupForm = document.getElementById("signupForm");
+    const nextBtn = document.getElementById("next-btn");
+    const uploadSection = document.getElementById("upload-section");
+    const submitBtn = document.getElementById("submit-form");
+    const skipUploadBtn = document.getElementById("skip-upload");
 
-    if (signupForm) {
-      signupForm.addEventListener("submit", async (e) => {
-        e.preventDefault();
+    let userData = {};
 
-        const username = document.getElementById("signup-username").value;
-        const email = document.getElementById("signup-email").value;
-        const passwordInput = document.getElementById("signup-password");
-        const confirmPasswordInput = document.getElementById("signup-confirm-password");
-        
-        // Ensure password and confirmPassword are both strings
-        const password = passwordInput.value.trim();
-        const confirmPassword = confirmPasswordInput.value.trim();
+    nextBtn.addEventListener("click", () => {
+      // Gather form data
+      userData.username = document.getElementById("signup-username").value;
+      userData.email = document.getElementById("signup-email").value;
+      userData.password = document.getElementById("signup-password").value;
+      userData.confirmPassword = document.getElementById("signup-confirm-password").value;
+      userData.phoneNumber = document.getElementById("country-code").value + document.getElementById("local-number").value;
 
-        // Validate password match
-        if (password !== confirmPassword) {
-          alert("Passwords do not match.");
-          return;
+      // Validate password match
+      if (userData.password !== userData.confirmPassword) {
+        alert("Passwords do not match.");
+        return;
+      }
+
+      // Hide initial form and show profile picture upload section
+      signupForm.style.display = "none";
+      uploadSection.style.display = "block";
+    });
+
+    submitBtn.addEventListener("click", async () => {
+      const { username, email, password, phoneNumber } = userData;
+
+      // Create user in Firebase Authentication
+      try {
+        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+        const user = userCredential.user;
+
+        // Save additional data to Firestore
+        await setDoc(doc(db, "users", user.uid), {
+          username: username,
+          email: email,
+          phoneNumber: phoneNumber,
+          createdAt: new Date().toISOString()
+        });
+
+        // Handle profile picture upload (if any)
+        const profilePic = document.getElementById("profile-picture").files[0];
+        if (profilePic) {
+          const storageRef = firebase.storage().ref();
+          const picRef = storageRef.child(`profile_pictures/${user.uid}`);
+          await picRef.put(profilePic);
+          const picUrl = await picRef.getDownloadURL();
+
+          await setDoc(doc(db, "users", user.uid), { profilePicture: picUrl }, { merge: true });
         }
 
-        // Country code and phone number
-        const countryCode = document.getElementById("country-code").value;
-        const localNumber = document.getElementById("local-number").value;
-        const phoneNumber = `${countryCode}${localNumber}`;
+        alert("Sign-up successful!");
+        window.location.href = "home.html";
+      } catch (error) {
+        alert("Error: " + error.message);
+      }
+    });
 
-        // Validate phone number length
-        const phonePattern = /^[0-9]{6,15}$/;
-        const phoneValid = phonePattern.test(localNumber);
-        if (!phoneValid) {
-          document.getElementById("local-number").style.borderColor = "red";
-          alert("Please enter a valid phone number.");
-          return;
-        } else {
-          document.getElementById("local-number").style.borderColor = "green";
-        }
-
-        try {
-          // Create user in Firebase Authentication
-          const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-          const user = userCredential.user;
-
-          // Save additional data to Firestore
-          await setDoc(doc(db, "users", user.uid), {
-            username: username,
-            email: email,
-            phoneNumber: phoneNumber, // Store phone number in E.164 format
-            createdAt: new Date().toISOString()
-          });
-
-          alert("Sign-up successful!");
-          window.location.href = "home.html";
-        } catch (error) {
-          alert("Error: " + error.message);
-        }
-      });
-    }
+    skipUploadBtn.addEventListener("click", () => {
+      // Skip profile picture upload and proceed to submit
+      submitBtn.click();
+    });
   } else if (currentPage === "home") {
     // Home page functionality
     onAuthStateChanged(auth, (user) => {

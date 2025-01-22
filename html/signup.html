@@ -11,6 +11,7 @@
 <body id="signup">
     <div class="signup-container">
         <h2>Sign Up</h2>
+        <!-- Initial Signup Form -->
         <form id="signupForm">
             <input type="text" id="signup-username" placeholder="Username" required />
             <input type="email" id="signup-email" placeholder="Email" required />
@@ -28,13 +29,16 @@
             <label for="local-number">Phone Number:</label>
             <input id="local-number" type="tel" placeholder="Enter your phone number" />
             
-            <button type="submit">Sign Up</button>
+            <button type="button" id="next-btn">Next</button>
         </form>
+
+        <!-- Profile Picture Section -->
         <div id="upload-section" style="display: none;">
             <h3>Would you like to upload a profile picture?</h3>
             <input type="file" id="profile-picture" />
             <button id="skip-upload">Skip</button>
             <button id="upload-picture">Upload Picture</button>
+            <button id="submit-form">Submit</button>
         </div>
     </div>
     <script type="module" src="https://www.gstatic.com/firebasejs/9.16.0/firebase-app.js"></script>
