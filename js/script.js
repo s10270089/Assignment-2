@@ -29,12 +29,23 @@ document.addEventListener("DOMContentLoaded", () => {
     if (loginForm) {
       loginForm.addEventListener("submit", async (e) => {
         e.preventDefault();
-        const email = document.getElementById("login-email").value;
+        const username = document.getElementById("login-username").value;
         const password = document.getElementById("login-password").value;
+
         try {
-          const userCredential = await signInWithEmailAndPassword(auth, email, password);
-          console.log("User logged in:", userCredential.user);
-          window.location.href = "home.html";
+          // Get the user by username (you'll need to fetch the email linked with the username)
+          const userDoc = await getDoc(doc(db, "users", username));  // Assuming the username is stored in Firestore
+          
+          if (userDoc.exists()) {
+            const email = userDoc.data().email;
+            
+            // Sign in using email and password
+            const userCredential = await signInWithEmailAndPassword(auth, email, password);
+            console.log("User logged in:", userCredential.user);
+            window.location.href = "home.html";
+          } else {
+            alert("Username not found");
+          }
         } catch (error) {
           alert("Error: " + error.message);
         }
