@@ -87,8 +87,7 @@ document.addEventListener("DOMContentLoaded", () => {
           result.push(obj);
       }
       return result;
-  }
-
+    }
     const signupForm = document.getElementById("signupForm");
     const nextBtn = document.getElementById("next-btn");
     const uploadSection = document.getElementById("upload-section");
@@ -148,9 +147,9 @@ document.addEventListener("DOMContentLoaded", () => {
         alert("Date of birth is required.");
         return;
       } else {
-        const dob = new Date(userData.dob);
+        let dob = new Date(userData.dob);
         const today = new Date();
-        const age = today.getFullYear() - dob.getFullYear();
+        let age = today.getFullYear() - dob.getFullYear();
         const monthDifference = today.getMonth() - dob.getMonth();
         if (monthDifference < 0 || (monthDifference === 0 && today.getDate() < dob.getDate())) {
           age--;
@@ -218,6 +217,9 @@ document.addEventListener("DOMContentLoaded", () => {
           await picRef.put(profilePic);
           const picUrl = await picRef.getDownloadURL();
         }
+        // Redirect to home.html after successful signup
+        window.location.href = "home.html";
+
       } catch (error) {
         alert("Error: " + error.message);
       }
