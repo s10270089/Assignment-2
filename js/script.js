@@ -1,5 +1,5 @@
 // Firebase Modules
-import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/9.16.0/firebase-firestore.js";
+import { getFirestore, doc, setDoc, getDoc, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/9.16.0/firebase-firestore.js";
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.16.0/firebase-auth.js";
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.16.0/firebase-app.js";
 
@@ -21,10 +21,9 @@ const db = getFirestore(app);
 
 // Page-Specific Functionality
 document.addEventListener("DOMContentLoaded", () => {
-  const currentPage = document.body.id;
+  const currentPage = document.body.id; // Assumes body has an id like "login" or "signup"
 
   if (currentPage === "login") {
-    // Login page functionality
     const loginForm = document.getElementById("login-form");
     if (loginForm) {
       loginForm.addEventListener("submit", async (e) => {
@@ -33,21 +32,29 @@ document.addEventListener("DOMContentLoaded", () => {
         const password = document.getElementById("login-password").value;
 
         try {
-          // Get the user by username (you'll need to fetch the email linked with the username)
-          const userDoc = await getDoc(doc(db, "users", username));  // Assuming the username is stored in Firestore
-          
-          if (userDoc.exists()) {
-            const email = userDoc.data().email;
-            
-            // Sign in using email and password
+          // Query Firestore for the user based on username
+          const querySnapshot = await getDocs(query(collection(db, "users"), where("username", "==", username)));
+    
+          if (!querySnapshot.empty) {
+            const userDoc = querySnapshot.docs[0]; // Get the first document matching the username
+            const userId = userDoc.id; // Get the user ID from the document ID
+            const email = userDoc.data().email; // Get the email from the user document
+    
+            // Sign in with Firebase Authentication using the email and password
             const userCredential = await signInWithEmailAndPassword(auth, email, password);
-            console.log("User logged in:", userCredential.user);
-            window.location.href = "home.html";
+            const user = userCredential.user;
+    
+            // Set a cookie for persistent login (1 month expiry)
+            setCookie("userUID", user.uid, 30);
+    
+            console.log("User logged in:", user);
+            window.location.href = "home.html"; // Redirect to home page
           } else {
             alert("Username not found");
           }
         } catch (error) {
-          alert("Error: " + error.message);
+          console.error("Error logging in:", error.message);
+          alert("Login failed. Please check your credentials and try again.");
         }
       });
     }
@@ -239,11 +246,25 @@ document.addEventListener("DOMContentLoaded", () => {
         window.location.href = "index.html";
       }
     });
+
+    function logoutUser() {
+      auth.signOut()
+        .then(() => {
+          clearCookie("userUID");
+          alert("You have been logged out.");
+          window.location.href = "home.html"; // Redirect to login page
+        })
+        .catch((error) => {
+          console.error("Error logging out:", error.message);
+        });
+    }
+
     const logoutButton = document.getElementById("logout");
     if (logoutButton) {
       logoutButton.addEventListener("click", async () => {
         try {
           await signOut(auth);
+          logoutUser();
           window.location.href = "index.html";
         } catch (error) {
           alert(error.message);
@@ -251,46 +272,133 @@ document.addEventListener("DOMContentLoaded", () => {
       });
     }
   } else if (currentPage === "listings") {
-    // Listings page functionality
-    const container = document.getElementById("listing-container");
-    if (container) {
-      fetchListings();
+    const listingsContainer = document.querySelector(".listings-container");
+    const searchInput = document.getElementById("search-input");
+    const searchBtn = document.getElementById("search-btn");
+
+    // Fetch Listings from Firestore
+    async function fetchListings(queryString = "") {
+      try {
+        let listingsQuery = collection(db, "listings");
+
+        // If there is a search query, filter results
+        if (queryString) {
+          listingsQuery = query(
+            listingsQuery,
+            where("name", ">=", queryString),
+            where("name", "<=", queryString + "\uf8ff") // Firestore supports range queries
+          );
+        }
+
+        const querySnapshot = await getDocs(listingsQuery);
+        renderListings(querySnapshot);
+      } catch (error) {
+        console.error("Error fetching listings:", error);
+        alert("Failed to fetch listings. Please try again.");
+      }
     }
+
+    // Render Listings
+    function renderListings(querySnapshot) {
+      listingsContainer.innerHTML = ""; // Clear existing content
+      if (querySnapshot.empty) {
+        listingsContainer.innerHTML = "<p>No listings found.</p>";
+        return;
+      }
+
+      querySnapshot.forEach((doc) => {
+        const listing = doc.data();
+        const listingCard = document.createElement("div");
+        listingCard.classList.add("listing-card");
+
+        listingCard.innerHTML = `
+          <div class="listing-image">
+            <img src="${listing.image || 'default-image.jpg'}" alt="${listing.name}">
+          </div>
+          <div class="listing-details">
+            <h2>${listing.name}</h2>
+            <p>${listing.description}</p>
+            <p><strong>Price:</strong> £${(typeof listing.price === 'number' ? listing.price.toFixed(2) : "N/A")}</p>
+          </div>
+        `;
+
+        listingsContainer.appendChild(listingCard);
+      });
+    }
+
+    // Search Button Event Listener
+    searchBtn.addEventListener("click", () => {
+      const queryString = searchInput.value.trim();
+      fetchListings(queryString);
+    });
+
+    // Initial Fetch
+    fetchListings(); // Fetch all listings by default
+    document.getElementById("search-btn").addEventListener("click", async () => {
+      const searchQuery = document.getElementById("search-input").value.toLowerCase();
+      const listingsContainer = document.querySelector(".listings-container");
+      listingsContainer.innerHTML = "";
+      try {
+        const querySnapshot = await db.collection("listings").get();
+        querySnapshot.forEach((doc) => {
+          const listing = doc.data();
+          if (listing.title.toLowerCase().includes(searchQuery)) {
+            const listingCard = `
+              <div class="listing-card">
+                <img src="${listing.imageURL}" alt="${listing.title}">
+                <h2>${listing.title}</h2>
+                <p>${listing.description}</p>
+                <p>Price: £${listing.price}</p>
+              </div>
+            `;
+            listingsContainer.innerHTML += listingCard;
+          }
+        });
+      } catch (error) {
+        console.error("Error searching listings: ", error);
+      }
+      });
   }
-});
-
-// Fetch listings function (used on the listings page)
-async function fetchListings() {
-  const API_URL = "https://api.example.com/listings";
-  try {
-    const response = await fetch(API_URL);
-    const listings = await response.json();
-    displayListings(listings);
-  } catch (error) {
-    console.error("Error fetching listings:", error);
-  }
+});   
+        
+// Logout functionality
+function logoutUser() {
+  auth.signOut()
+    .then(() => {
+      clearCookie("userUID");
+      alert("You have been logged out.");
+      window.location.href = "login"; // Redirect to login page
+    })
+    .catch((error) => {
+      console.error("Error logging out:", error.message);
+    });
 }
 
-function displayListings(listings) {
-  const container = document.getElementById("listing-container");
-  container.innerHTML = ""; // Clear previous listings
-
-  listings.forEach((listing) => {
-    const listingDiv = document.createElement("div");
-    listingDiv.className = "listing";
-    listingDiv.innerHTML = `
-      <h3>${listing.title}</h3>
-      <img src="${listing.image}" alt="${listing.title}">
-      <p>Category: ${listing.category}</p>
-      <p>Price: $${listing.price}</p>
-      <p>Description: ${listing.description}</p>
-      <p>Condition: ${listing.condition}</p>
-      <button onclick="contactSeller('${listing.sellerId}')">Contact Seller</button>
-    `;
-    container.appendChild(listingDiv);
-  });
+// Helper function to set a cookie
+function setCookie(name, value, days) {
+  const date = new Date();
+  date.setTime(date.getTime() + days * 24 * 60 * 60 * 1000);
+  const expires = "expires=" + date.toUTCString();
+  document.cookie = `${name}=${value};${expires};path=/`;
 }
 
-function contactSeller(sellerId) {
-  alert(`Contacting seller with ID: ${sellerId}`);
+// Helper function to clear cookies
+function clearCookie(name) {
+  document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/;`;
 }
+
+
+// function getCookie(name) {
+//   const value = `; ${document.cookie}`;
+//   const parts = value.split(`; ${name}=`);
+//   if (parts.length === 2) return parts.pop().split(";").shift();
+//   return null;
+// }
+
+// window.onload = function () {
+//   const userUID = getCookie("userUID");
+//   if (!userUID) {
+//     alert("You must log in to access this page.");
+//     window.location.href = "index.html"; // Redirect to login page
+//   }
+// };
