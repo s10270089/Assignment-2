@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Up</title>
+    <link rel="stylesheet" href="../css/styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/css/intlTelInput.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/js/intlTelInput.min.js"></script>
+</head>
+<body id="signup">
+    <div class="signup-container">
+        <h2>Sign Up</h2>
+        <!-- Initial Signup Form -->
+        <form id="signupForm">
+            <input type="text" id="signup-username" placeholder="Username" required />
+            <input type="email" id="signup-email" placeholder="Email" required />
+            <input type="password" id="signup-password" placeholder="Password" required />
+            <input type="password" id="signup-confirm-password" placeholder="Confirm Password" required />
+            <input type="date" id="signup-dob" required />
+            
+            <label for="country-code">Country:</label>
+            <select id="country-code">
+                <option value="+44">🇬🇧 +44 (UK)</option>
+                <option value="+1">🇺🇸 +1 (US)</option>
+                <option value="+61">🇦🇺 +61 (Australia)</option>
+            </select>
+
+            <label for="local-number">Phone Number:</label>
+            <input id="local-number" type="tel" placeholder="Enter your phone number" />
+            
+            <button type="button" id="next-btn">Next</button>
+        </form>
+
+        <!-- Profile Picture Section -->
+        <div id="upload-section" style="display: none;">
+            <h3>Would you like to upload a profile picture?</h3>
+            <input type="file" id="profile-picture" />
+            <button id="skip-upload">Skip</button>
+            <button id="upload-picture">Upload Picture</button>
+            <button id="submit-form">Submit</button>
+        </div>
+    </div>
+    <script type="module" src="https://www.gstatic.com/firebasejs/9.16.0/firebase-app.js"></script>
+    <script type="module" src="https://www.gstatic.com/firebasejs/9.16.0/firebase-auth.js"></script>
+    <script type="module" src="https://www.gstatic.com/firebasejs/9.16.0/firebase-storage.js"></script>
+    <script type="module" src="../js/script.js"></script>
+</body>
+</html>
