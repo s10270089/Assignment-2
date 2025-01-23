@@ -52,7 +52,9 @@ document.addEventListener("DOMContentLoaded", () => {
       });
     }
   } else if (currentPage === "signup") {
-    document.addEventListener("DOMContentLoaded", async () => {
+    // Load country codes
+    loadCountryCodes();
+    async function loadCountryCodes() {
       try {
         const response = await fetch('../data/country_codes.csv');
         const data = await response.text();
@@ -69,24 +71,23 @@ document.addEventListener("DOMContentLoaded", () => {
       } catch (error) {
         console.error("Error loading country codes:", error);
       }
-    });
-    
+    }
     function parseCSV(data) {
       const lines = data.split('\n');
       const result = [];
       const headers = lines[0].split(',');
-    
+  
       for (let i = 1; i < lines.length; i++) {
-        const obj = {};
-        const currentline = lines[i].split(',');
-    
-        for (let j = 0; j < headers.length; j++) {
-          obj[headers[j]] = currentline[j];
-        }
-        result.push(obj);
+          const obj = {};
+          const currentline = lines[i].split(',');
+  
+          for (let j = 0; j < headers.length; j++) {
+              obj[headers[j].trim()] = currentline[j].trim();
+          }
+          result.push(obj);
       }
       return result;
-    }
+  }
 
     const signupForm = document.getElementById("signupForm");
     const nextBtn = document.getElementById("next-btn");
@@ -167,6 +168,9 @@ document.addEventListener("DOMContentLoaded", () => {
       const localNumber = document.getElementById("local-number").value;
       const selectedCountry = document.getElementById("country-code").selectedOptions[0];
       const requiredLength = selectedCountry.dataset.length;
+
+      console.log("Selected Country:", selectedCountry);
+      console.log("Required Length:", requiredLength);
 
       if (!userData.phoneNumber || !localNumber || localNumber.length != requiredLength) {
         document.getElementById("country-code").classList.add("invalid");
