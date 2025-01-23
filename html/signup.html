@@ -20,10 +20,9 @@
             <input type="date" id="signup-dob" required />
             
             <label for="country-code">Country:</label>
+                <!-- Options will be populated dynamically -->
             <select id="country-code">
-                <option value="+44">🇬🇧 +44 (UK)</option>
-                <option value="+1">🇺🇸 +1 (US)</option>
-                <option value="+61">🇦🇺 +61 (Australia)</option>
+
             </select>
 
             <label for="local-number">Phone Number:</label>
@@ -39,6 +38,7 @@
             <button id="skip-upload">Skip</button>
             <button id="upload-picture">Upload Picture</button>
             <button id="submit-form">Submit</button>
+            <button type="button" id="backBtn">Back</button>
         </div>
     </div>
     <script type="module" src="https://www.gstatic.com/firebasejs/9.16.0/firebase-app.js"></script>

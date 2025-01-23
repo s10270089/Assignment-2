@@ -52,49 +52,160 @@ document.addEventListener("DOMContentLoaded", () => {
       });
     }
   } else if (currentPage === "signup") {
+    document.addEventListener("DOMContentLoaded", async () => {
+      try {
+        const response = await fetch('../data/country_codes.csv');
+        const data = await response.text();
+        const countryCodes = parseCSV(data);
+    
+        const countryCodeSelect = document.getElementById("country-code");
+        countryCodes.forEach(country => {
+          const option = document.createElement("option");
+          option.value = country.code;
+          option.textContent = `${country.country} (${country.code})`;
+          option.dataset.length = country.length;
+          countryCodeSelect.appendChild(option);
+        });
+      } catch (error) {
+        console.error("Error loading country codes:", error);
+      }
+    });
+    
+    function parseCSV(data) {
+      const lines = data.split('\n');
+      const result = [];
+      const headers = lines[0].split(',');
+    
+      for (let i = 1; i < lines.length; i++) {
+        const obj = {};
+        const currentline = lines[i].split(',');
+    
+        for (let j = 0; j < headers.length; j++) {
+          obj[headers[j]] = currentline[j];
+        }
+        result.push(obj);
+      }
+      return result;
+    }
+
     const signupForm = document.getElementById("signupForm");
     const nextBtn = document.getElementById("next-btn");
     const uploadSection = document.getElementById("upload-section");
     const submitBtn = document.getElementById("submit-form");
     const skipUploadBtn = document.getElementById("skip-upload");
-
+    
     let userData = {};
-
+    
     nextBtn.addEventListener("click", () => {
       // Gather form data
       userData.username = document.getElementById("signup-username").value;
       userData.email = document.getElementById("signup-email").value;
       userData.password = document.getElementById("signup-password").value;
       userData.confirmPassword = document.getElementById("signup-confirm-password").value;
+      userData.dob = document.getElementById("signup-dob").value;
       userData.phoneNumber = document.getElementById("country-code").value + document.getElementById("local-number").value;
-
-      // Validate password match
+    
+      // Validate username
+      if (!userData.username) {
+        document.getElementById("signup-username").classList.add("invalid");
+        alert("Username is required.");
+        return;
+      } else {
+        document.getElementById("signup-username").classList.remove("invalid");
+      }
+    
+      // Validate email
+      if (!userData.email) {
+        document.getElementById("signup-email").classList.add("invalid");
+        alert("Email is required.");
+        return;
+      } else {
+        document.getElementById("signup-email").classList.remove("invalid");
+      }
+    
+      // Validate password
+      if (!userData.password) {
+        document.getElementById("signup-password").classList.add("invalid");
+        alert("Password is required.");
+        return;
+      } else {
+        document.getElementById("signup-password").classList.remove("invalid");
+      }
+    
+      // Validate confirm password
       if (userData.password !== userData.confirmPassword) {
+        document.getElementById("signup-confirm-password").classList.add("invalid");
         alert("Passwords do not match.");
         return;
+      } else {
+        document.getElementById("signup-confirm-password").classList.remove("invalid");
+      }
+    
+      // Validate DOB
+      if (!userData.dob) {
+        document.getElementById("signup-dob").classList.add("invalid");
+        alert("Date of birth is required.");
+        return;
+      } else {
+        const dob = new Date(userData.dob);
+        const today = new Date();
+        const age = today.getFullYear() - dob.getFullYear();
+        const monthDifference = today.getMonth() - dob.getMonth();
+        if (monthDifference < 0 || (monthDifference === 0 && today.getDate() < dob.getDate())) {
+          age--;
+        }
+        if (age < 18) {
+          document.getElementById("signup-dob").classList.add("invalid");
+          alert("You must be at least 18 years old.");
+          return;
+        } else {
+          document.getElementById("signup-dob").classList.remove("invalid");
+        }
       }
 
+      // Validate phone number
+      const localNumber = document.getElementById("local-number").value;
+      const selectedCountry = document.getElementById("country-code").selectedOptions[0];
+      const requiredLength = selectedCountry.dataset.length;
+
+      if (!userData.phoneNumber || !localNumber || localNumber.length != requiredLength) {
+        document.getElementById("country-code").classList.add("invalid");
+        document.getElementById("local-number").classList.add("invalid");
+        alert(`A valid phone number is required. It should be ${requiredLength} digits long.`);
+        return;
+      } else {
+        document.getElementById("country-code").classList.remove("invalid");
+        document.getElementById("local-number").classList.remove("invalid");
+      }
+    
       // Hide initial form and show profile picture upload section
       signupForm.style.display = "none";
       uploadSection.style.display = "block";
     });
+    
+    backBtn.addEventListener("click", () => {
+      // Show initial form and hide profile picture upload section
+      signupForm.style.display = "block";
+      uploadSection.style.display = "none";
+    });
 
     submitBtn.addEventListener("click", async () => {
       const { username, email, password, phoneNumber } = userData;
-
+    
       // Create user in Firebase Authentication
       try {
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
         const user = userCredential.user;
-
+    
         // Save additional data to Firestore
         await setDoc(doc(db, "users", user.uid), {
           username: username,
           email: email,
           phoneNumber: phoneNumber,
+          dob: userData.dob,
           createdAt: new Date().toISOString()
         });
-
+    
         // Handle profile picture upload (if any)
         const profilePic = document.getElementById("profile-picture").files[0];
         if (profilePic) {
@@ -102,12 +213,7 @@ document.addEventListener("DOMContentLoaded", () => {
           const picRef = storageRef.child(`profile_pictures/${user.uid}`);
           await picRef.put(profilePic);
           const picUrl = await picRef.getDownloadURL();
-
-          await setDoc(doc(db, "users", user.uid), { profilePicture: picUrl }, { merge: true });
         }
-
-        alert("Sign-up successful!");
-        window.location.href = "home.html";
       } catch (error) {
         alert("Error: " + error.message);
       }
