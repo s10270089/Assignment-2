@@ -23,12 +23,12 @@
     <main>
         <section id="upload">
             <h2>Upload Your Item</h2>
-            <form id="upload-form">
+            <form id="upload">
                 <label for="title">Item Title:</label>
                 <input type="text" id="title" required>
 
                 <label for="image">Upload Image:</label>
-                <input type="file" id="image" accept="image/*" required onchange="previewImage(event)">
+                <input type="file" id="image" accept="image/*" onchange="previewImage(event)">
 
                 <img id="image-preview" src="" alt="Image Preview" style="display: none; width: 100px; height: auto; margin-bottom: 10px;">
 

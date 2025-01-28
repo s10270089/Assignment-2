@@ -1,8 +1,7 @@
 // Firebase Modules
-import { getFirestore, doc, setDoc, getDoc, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/9.16.0/firebase-firestore.js";
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.16.0/firebase-auth.js";
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.16.0/firebase-app.js";
-
+import { getFirestore, doc, setDoc, getDoc, getDocs, query, where, collection, addDoc } from "https://www.gstatic.com/firebasejs/9.16.0/firebase-firestore.js";
 // Firebase configuration
 const firebaseConfig = {
   apiKey: "AIzaSyDqYtQAxeSDqaXdReUFdP2goqHfgTj0sNM",
@@ -13,11 +12,39 @@ const firebaseConfig = {
   appId: "1:165673734048:web:5e8c69745ebaefcc47dec5",
   measurementId: "G-EMD85073YC"
 };
-wadawda
+
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
+
+// Cloudinary Configuration
+const CLOUDINARY_CLOUD_NAME = "dqnoqh0hi"; // Replace with your Cloudinary cloud name
+const CLOUDINARY_UPLOAD_PRESET = "ml_default"; // Replace with your Cloudinary upload preset
+
+// Function to upload image to Cloudinary
+const uploadImageToCloudinary = async (file) => {
+  const formData = new FormData();
+  formData.append("file", file);
+  formData.append("upload_preset", CLOUDINARY_UPLOAD_PRESET);
+
+  try {
+    const response = await fetch(
+      `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`,
+      {
+        method: "POST",
+        body: formData,
+      }
+    );
+
+    const data = await response.json();
+    return data.secure_url; // Return the URL of the uploaded image
+  } catch (error) {
+    console.error("Error uploading image to Cloudinary:", error);
+    throw error;
+  }
+};
+
 
 // Page-Specific Functionality
 document.addEventListener("DOMContentLoaded", () => {
@@ -277,63 +304,66 @@ document.addEventListener("DOMContentLoaded", () => {
     const searchBtn = document.getElementById("search-btn");
 
     // Fetch Listings from Firestore
-    async function fetchListings(queryString = "") {
-      try {
-        let listingsQuery = collection(db, "listings");
+  async function fetchListings(queryString = "") {
+    try {
+      let listingsQuery = collection(db, "listings");
 
-        // If there is a search query, filter results
-        if (queryString) {
-          listingsQuery = query(
-            listingsQuery,
-            where("name", ">=", queryString),
-            where("name", "<=", queryString + "\uf8ff") // Firestore supports range queries
-          );
-        }
-
-        const querySnapshot = await getDocs(listingsQuery);
-        renderListings(querySnapshot);
-      } catch (error) {
-        console.error("Error fetching listings:", error);
-        alert("Failed to fetch listings. Please try again.");
-      }
-    }
-
-    // Render Listings
-    function renderListings(querySnapshot) {
-      listingsContainer.innerHTML = ""; // Clear existing content
-      if (querySnapshot.empty) {
-        listingsContainer.innerHTML = "<p>No listings found.</p>";
-        return;
+      // If there is a search query, filter results
+      if (queryString) {
+        listingsQuery = query(
+          listingsQuery,
+          where("title", ">=", queryString),
+          where("title", "<=", queryString + "\uf8ff") // Firestore supports range queries
+        );
       }
 
-      querySnapshot.forEach((doc) => {
-        const listing = doc.data();
-        const listingCard = document.createElement("div");
-        listingCard.classList.add("listing-card");
+      const querySnapshot = await getDocs(listingsQuery);
+      renderListings(querySnapshot);
+    } catch (error) {
+      console.error("Error fetching listings:", error);
+      alert("Failed to fetch listings. Please try again.");
+    }
+  }
 
-        listingCard.innerHTML = `
-          <div class="listing-image">
-            <img src="${listing.image || 'default-image.jpg'}" alt="${listing.name}">
-          </div>
-          <div class="listing-details">
-            <h2>${listing.name}</h2>
-            <p>${listing.description}</p>
-            <p><strong>Price:</strong> £${(typeof listing.price === 'number' ? listing.price.toFixed(2) : "N/A")}</p>
-          </div>
-        `;
+  // Render Listings
+  function renderListings(querySnapshot) {
+    const listingsContainer = document.querySelector(".listings-container");
+    listingsContainer.innerHTML = ""; // Clear existing content
 
-        listingsContainer.appendChild(listingCard);
-      });
+    if (querySnapshot.empty) {
+      listingsContainer.innerHTML = "<p>No listings found.</p>";
+      return;
     }
 
-    // Search Button Event Listener
-    searchBtn.addEventListener("click", () => {
-      const queryString = searchInput.value.trim();
-      fetchListings(queryString);
+    querySnapshot.forEach((doc) => {
+      const listing = doc.data();
+      const listingCard = document.createElement("div");
+      listingCard.classList.add("listing-card");
+
+      listingCard.innerHTML = `
+        <div class="listing-image">
+          <img src="${listing.imageUrl}" alt="${listing.title}">
+        </div>
+        <div class="listing-details">
+          <h2>${listing.title}</h2>
+          <p>${listing.description}</p>
+          <p><strong>Price:</strong> £${listing.price.toFixed(2)}</p>
+          <p><strong>Condition:</strong> ${listing.condition}</p>
+        </div>
+      `;
+
+      listingsContainer.appendChild(listingCard);
     });
+  }
 
-    // Initial Fetch
-    fetchListings(); // Fetch all listings by default
+  // Search Button Event Listener
+  document.getElementById("search-btn").addEventListener("click", () => {
+    const queryString = document.getElementById("search-input").value.trim();
+    fetchListings(queryString);
+  });
+
+  // Initial Fetch
+  fetchListings(); // Fetch all listings by default
     document.getElementById("search-btn").addEventListener("click", async () => {
       const searchQuery = document.getElementById("search-input").value.toLowerCase();
       const listingsContainer = document.querySelector(".listings-container");
@@ -358,9 +388,72 @@ document.addEventListener("DOMContentLoaded", () => {
         console.error("Error searching listings: ", error);
       }
       });
+  }else if (currentPage === "upload") {
+    // Handle the form submission for uploading items
+    const uploadForm = document.getElementById("upload-form");
+  
+    if (uploadForm) {
+      uploadForm.addEventListener("submit", async (event) => {
+        event.preventDefault(); // Prevent page reload
+  
+        // Get form values
+        const title = document.getElementById("title").value;
+        const category = document.getElementById("category").value;
+        const price = parseFloat(document.getElementById("price").value);
+        const description = document.getElementById("description").value;
+        const condition = document.getElementById("condition").value;
+        const imageInput = document.getElementById("image");
+  
+        let imageUrl = ""; // Default to an empty string if no image is uploaded
+  
+        // Check if an image file was uploaded
+        if (imageInput.files.length > 0) {
+          const imageFile = imageInput.files[0];
+  
+          try {
+            // 1. Upload the image to Cloudinary
+            imageUrl = await uploadImageToCloudinary(imageFile);
+  
+            // Apply Cloudinary template (e.g., resize to 500x500)
+            imageUrl = imageUrl.replace(
+              "/upload/",
+              "/upload/w_500,h_500,c_fill/" // Cloudinary transformation parameters
+            );
+          } catch (error) {
+            console.error("Error uploading image to Cloudinary:", error);
+            alert("Failed to upload image. Please try again.");
+            return;
+          }
+        } else {
+          // Use a placeholder image URL if no image is uploaded
+          imageUrl = "https://via.placeholder.com/500"; // Placeholder image URL
+        }
+  
+        try {
+          // 2. Save listing to Firestore
+          const docRef = await addDoc(collection(db, "listings"), {
+            title,
+            category,
+            price,
+            description,
+            condition,
+            imageUrl,
+            createdAt: new Date().toISOString(),
+          });
+  
+          console.log("Listing added with ID:", docRef.id);
+          alert("Item uploaded successfully!");
+          uploadForm.reset(); // Clear the form
+          document.getElementById("image-preview").style.display = "none"; // Hide preview
+        } catch (error) {
+          console.error("Error uploading item:", error);
+          alert("Failed to upload item. Please try again.");
+        }
+      });
+    }
   }
-});   
-        
+});
+
 // Logout functionality
 function logoutUser() {
   auth.signOut()
