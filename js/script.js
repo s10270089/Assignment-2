@@ -19,8 +19,10 @@ const auth = getAuth(app);
 const db = getFirestore(app);
 
 // Cloudinary Configuration
-const CLOUDINARY_CLOUD_NAME = "dqnoqh0hi"; // Replace with your Cloudinary cloud name
-const CLOUDINARY_UPLOAD_PRESET = "ml_default"; // Replace with your Cloudinary upload preset
+const CLOUDINARY_CLOUD_NAME = "dqnoqh0hi";
+const CLOUDINARY_UPLOAD_PRESET = "ml_default";
+
+
 
 // Function to upload image to Cloudinary
 const uploadImageToCloudinary = async (file) => {
@@ -38,7 +40,7 @@ const uploadImageToCloudinary = async (file) => {
     );
 
     const data = await response.json();
-    return data.secure_url; // Return the URL of the uploaded image
+    return data.secure_url;
   } catch (error) {
     console.error("Error uploading image to Cloudinary:", error);
     throw error;
@@ -46,9 +48,36 @@ const uploadImageToCloudinary = async (file) => {
 };
 
 
+// Logout functionality
+function logoutUser() {
+  auth.signOut()
+    .then(() => {
+      clearCookie("userUID");
+      alert("You have been logged out.");
+      window.location.href = "login";
+    })
+    .catch((error) => {
+      console.error("Error logging out:", error.message);
+    });
+}
+
+// Helper function to set a cookie
+function setCookie(name, value, days) {
+  const date = new Date();
+  date.setTime(date.getTime() + days * 24 * 60 * 60 * 1000);
+  const expires = "expires=" + date.toUTCString();
+  document.cookie = `${name}=${value};${expires};path=/`;
+}
+
+// Helper function to clear cookies
+function clearCookie(name) {
+  document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/;`;
+}
+
+
 // Page-Specific Functionality
 document.addEventListener("DOMContentLoaded", () => {
-  const currentPage = document.body.id; // Assumes body has an id like "login" or "signup"
+  const currentPage = document.body.id;
 
   if (currentPage === "login") {
     const loginForm = document.getElementById("login-form");
@@ -63,9 +92,9 @@ document.addEventListener("DOMContentLoaded", () => {
           const querySnapshot = await getDocs(query(collection(db, "users"), where("username", "==", username)));
     
           if (!querySnapshot.empty) {
-            const userDoc = querySnapshot.docs[0]; // Get the first document matching the username
-            const userId = userDoc.id; // Get the user ID from the document ID
-            const email = userDoc.data().email; // Get the email from the user document
+            const userDoc = querySnapshot.docs[0];
+            const userId = userDoc.id;
+            const email = userDoc.data().email;
     
             // Sign in with Firebase Authentication using the email and password
             const userCredential = await signInWithEmailAndPassword(auth, email, password);
@@ -279,7 +308,7 @@ document.addEventListener("DOMContentLoaded", () => {
         .then(() => {
           clearCookie("userUID");
           alert("You have been logged out.");
-          window.location.href = "home.html"; // Redirect to login page
+          window.location.href = "home.html";
         })
         .catch((error) => {
           console.error("Error logging out:", error.message);
@@ -313,7 +342,7 @@ document.addEventListener("DOMContentLoaded", () => {
         listingsQuery = query(
           listingsQuery,
           where("title", ">=", queryString),
-          where("title", "<=", queryString + "\uf8ff") // Firestore supports range queries
+          where("title", "<=", queryString + "\uf8ff")
         );
       }
 
@@ -328,7 +357,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // Render Listings
   function renderListings(querySnapshot) {
     const listingsContainer = document.querySelector(".listings-container");
-    listingsContainer.innerHTML = ""; // Clear existing content
+    listingsContainer.innerHTML = "";
 
     if (querySnapshot.empty) {
       listingsContainer.innerHTML = "<p>No listings found.</p>";
@@ -391,10 +420,13 @@ document.addEventListener("DOMContentLoaded", () => {
   }else if (currentPage === "upload") {
     // Handle the form submission for uploading items
     const uploadForm = document.getElementById("upload-form");
-  
+    console.log("Current page:", currentPage); // Debugging log
+    console.log("Upload form:", uploadForm); // Debugging log
+
     if (uploadForm) {
       uploadForm.addEventListener("submit", async (event) => {
-        event.preventDefault(); // Prevent page reload
+        event.preventDefault(); 
+        // Prevent page reload
   
         // Get form values
         const title = document.getElementById("title").value;
@@ -404,20 +436,21 @@ document.addEventListener("DOMContentLoaded", () => {
         const condition = document.getElementById("condition").value;
         const imageInput = document.getElementById("image");
   
-        let imageUrl = ""; // Default to an empty string if no image is uploaded
+        let imageUrl = "";
   
         // Check if an image file was uploaded
         if (imageInput.files.length > 0) {
           const imageFile = imageInput.files[0];
   
           try {
+            
             // 1. Upload the image to Cloudinary
             imageUrl = await uploadImageToCloudinary(imageFile);
   
             // Apply Cloudinary template (e.g., resize to 500x500)
             imageUrl = imageUrl.replace(
               "/upload/",
-              "/upload/w_500,h_500,c_fill/" // Cloudinary transformation parameters
+              "/upload/w_500,h_500,c_fill/"
             );
           } catch (error) {
             console.error("Error uploading image to Cloudinary:", error);
@@ -426,7 +459,7 @@ document.addEventListener("DOMContentLoaded", () => {
           }
         } else {
           // Use a placeholder image URL if no image is uploaded
-          imageUrl = "https://via.placeholder.com/500"; // Placeholder image URL
+          imageUrl = `https://res.cloudinary.com/dqnoqh0hi/image/upload/cld-sample-5`;
         }
   
         try {
@@ -453,33 +486,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 });
-
-// Logout functionality
-function logoutUser() {
-  auth.signOut()
-    .then(() => {
-      clearCookie("userUID");
-      alert("You have been logged out.");
-      window.location.href = "login"; // Redirect to login page
-    })
-    .catch((error) => {
-      console.error("Error logging out:", error.message);
-    });
-}
-
-// Helper function to set a cookie
-function setCookie(name, value, days) {
-  const date = new Date();
-  date.setTime(date.getTime() + days * 24 * 60 * 60 * 1000);
-  const expires = "expires=" + date.toUTCString();
-  document.cookie = `${name}=${value};${expires};path=/`;
-}
-
-// Helper function to clear cookies
-function clearCookie(name) {
-  document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/;`;
-}
-
 
 // function getCookie(name) {
 //   const value = `; ${document.cookie}`;
