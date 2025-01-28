@@ -20,7 +20,7 @@ const db = getFirestore(app);
 
 // Cloudinary Configuration
 const CLOUDINARY_CLOUD_NAME = "dqnoqh0hi";
-const CLOUDINARY_UPLOAD_PRESET = "ml_default";
+const CLOUDINARY_UPLOAD_PRESET = "MokeSellPreset";
 
 
 
