@@ -3,47 +3,71 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sign Up</title>
+    <title>MokeSell - Sign Up</title>
     <link rel="stylesheet" href="../css/styles.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/css/intlTelInput.css" />
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/js/intlTelInput.min.js"></script>
 </head>
 <body id="signup">
-    <div class="signup-container">
-        <h2>Sign Up</h2>
-        <!-- Initial Signup Form -->
-        <form id="signupForm">
-            <input type="text" id="signup-username" placeholder="Username" required />
-            <input type="email" id="signup-email" placeholder="Email" required />
-            <input type="password" id="signup-password" placeholder="Password" required />
-            <input type="password" id="signup-confirm-password" placeholder="Confirm Password" required />
-            <input type="date" id="signup-dob" required />
-            
-            <label for="country-code">Country:</label>
-                <!-- Options will be populated dynamically -->
-            <select id="country-code">
+    <header>
+        <h1>MokeSell Marketplace</h1>
+        <nav>
+            <ul>
+                <li><a href="index.html">Home</a></li>
+                <li><a href="listings.html">Listings</a></li>
+                <li><a href="upload.html">Upload Item</a></li>
+                <li><a href="profile.html">Profile</a></li>
+                <li><a href="#about">About</a></li>
+                <li><a href="#contact">Contact</a></li>
+                <li><a href="signup.html">Sign Up</a></li>
+                <li><a href="login.html">Log in</a></li>
+            </ul>
+        </nav>
+    </header>
 
-            </select>
+    <main>
+        <section id="signup-section">
+            <h2>Sign Up</h2>
+            <form id="signupForm">
+                <label for="signup-username">Username:</label>
+                <input type="text" id="signup-username" required>
 
-            <label for="local-number">Phone Number:</label>
-            <input id="local-number" type="tel" placeholder="Enter your phone number" />
-            
-            <button type="button" id="next-btn">Next</button>
-        </form>
+                <label for="signup-email">Email:</label>
+                <input type="email" id="signup-email" required>
 
-        <!-- Profile Picture Section -->
-        <div id="upload-section" style="display: none;">
-            <h3>Would you like to upload a profile picture?</h3>
-            <input type="file" id="profile-picture" />
-            <button id="skip-upload">Skip</button>
-            <button id="upload-picture">Upload Picture</button>
-            <button id="submit-form">Submit</button>
-            <button type="button" id="backBtn">Back</button>
-        </div>
-    </div>
+                <label for="signup-password">Password:</label>
+                <input type="password" id="signup-password" required>
+
+                <label for="signup-confirm-password">Confirm Password:</label>
+                <input type="password" id="signup-confirm-password" required>
+
+                <label for="signup-dob">Date of Birth:</label>
+                <input type="date" id="signup-dob" required>
+
+                <label for="country-code">Country Code:</label>
+                <select id="country-code" required></select>
+
+                <label for="local-number">Phone Number:</label>
+                <input type="text" id="local-number" required>
+
+                <button type="button" id="next-btn">Next</button>
+            </form>
+
+            <div id="upload-section" style="display: none;">
+                <label for="profile-picture">Upload Profile Picture:</label>
+                <input type="file" id="profile-picture" accept="image/*">
+
+                <button type="button" id="submit-form">Submit</button>
+                <button type="button" id="skip-upload">Skip</button>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <p>&copy; 2025 MokeSell. All rights reserved.</p>
+    </footer>
+
     <script type="module" src="https://www.gstatic.com/firebasejs/9.16.0/firebase-app.js"></script>
     <script type="module" src="https://www.gstatic.com/firebasejs/9.16.0/firebase-auth.js"></script>
-    <script type="module" src="https://www.gstatic.com/firebasejs/9.16.0/firebase-storage.js"></script>
+    <script type="module" src="https://www.gstatic.com/firebasejs/9.16.0/firebase-firestore.js"></script>
     <script type="module" src="../js/script.js"></script>
 </body>
 </html>

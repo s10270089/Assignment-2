@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Assignment 2</title>
+    <title>MokeSell - Profile</title>
     <link rel="stylesheet" href="../css/styles.css">
 </head>
-<body id="home">
+<body id="profile">
     <header>
         <h1>MokeSell Marketplace</h1>
         <nav>
@@ -21,33 +21,32 @@
             </ul>
         </nav>
     </header>
-    <nav>
-        <ul>
-            <li><a href="#section1">Section 1</a></li>
-            <li><a href="#section2">Section 2</a></li>
-            <li><a href="#section3">Section 3</a></li>
-        </ul>
-    </nav>
+
     <main>
-        <section id="section1">
-            <h2>Section 1</h2>
-            <p>This is the first section.</p>
-        </section>
-        <section id="section2">
-            <h2>Section 2</h2>
-            <p>This is the second section.</p>
-        </section>
-        <section id="section3">
-            <h2>Section 3</h2>
-            <p>This is the third section.</p>
+        <section id="profile-section">
+            <h2>Your Profile</h2>
+            <div id="profile-info">
+                <img id="profile-picture" src="" alt="Profile Picture">
+                <p id="username-display"></p>
+                <button id="edit-username-btn">Edit Username</button>
+            </div>
+
+            <div id="edit-username-form" style="display: none;">
+                <input type="text" id="new-username" placeholder="New Username">
+                <button id="save-username-btn">Save</button>
+                <button id="cancel-edit-btn">Cancel</button>
+                <p id="username-error" style="color: red; display: none;">Username is already taken.</p>
+            </div>
         </section>
     </main>
+
     <footer>
-        <p></p>
+        <p>&copy; 2025 MokeSell. All rights reserved.</p>
     </footer>
+
     <script type="module" src="https://www.gstatic.com/firebasejs/9.16.0/firebase-app.js"></script>
     <script type="module" src="https://www.gstatic.com/firebasejs/9.16.0/firebase-auth.js"></script>
+    <script type="module" src="https://www.gstatic.com/firebasejs/9.16.0/firebase-firestore.js"></script>
     <script type="module" src="../js/script.js"></script>
-
 </body>
 </html>
