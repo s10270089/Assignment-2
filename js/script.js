@@ -120,14 +120,42 @@ const saveUserToFirestore = async (user, userData) => {
 // Page-Specific Functionality
 document.addEventListener("DOMContentLoaded", () => {
   const currentPage = document.body.id;
-   // Add logout functionality to all pages
-   const logoutButton = document.getElementById("logout-btn");
+
+  // Get references to the buttons
+  const logoutButton = document.getElementById("logout-btn");
+  const signupLink = document.getElementById("signup-link");
+  const loginLink = document.getElementById("login-link");
+
+  // Add logout functionality
+  if (logoutButton) {
+    logoutButton.addEventListener("click", () => {
+      logoutUser();
+    });
+  }
+
+  // Check authentication status and update the header
+  const auth = getAuth();
+  onAuthStateChanged(auth, (user) => {
+    if (user) {
+      // User is logged in
+      console.log("User is logged in:", user.uid);
+      if (logoutButton) logoutButton.style.display = "block"; // Show logout button
+      if (signupLink) signupLink.style.display = "none"; // Hide signup link
+      if (loginLink) loginLink.style.display = "none"; // Hide login link
+    } else {
+      // User is not logged in
+      console.log("User is not logged in.");
+      if (logoutButton) logoutButton.style.display = "none"; // Hide logout button
+      if (signupLink) signupLink.style.display = "block"; // Show signup link
+      if (loginLink) loginLink.style.display = "block"; // Show login link
+    }
+  });
    if (logoutButton) {
      logoutButton.addEventListener("click", () => {
        logoutUser();
      });
    }
-
+  // ========================== Log In Page ========================== //
   if (currentPage === "login") {
     const auth = getAuth();
 
@@ -181,7 +209,9 @@ document.addEventListener("DOMContentLoaded", () => {
         }
       }
     });
-  } else if (currentPage === "signup") {
+  } 
+  // ========================== Sign Up Page ========================== //
+  else if (currentPage === "signup") {
     const auth = getAuth();
 
     // Check if the user is already logged in
@@ -401,8 +431,9 @@ document.addEventListener("DOMContentLoaded", () => {
         isSigningUp = false; // Reset flag after signup
       }
     }
-  } else if (currentPage === "listings") {
-    const logoutButton = document.getElementById("logout-btn");
+  } 
+  // ========================== Listings Page ========================== //
+  else if (currentPage === "listings") {
     const listingsContainer = document.querySelector(".listings-container");
     const searchInput = document.getElementById("search-input");
     const searchBtn = document.getElementById("search-btn");
@@ -439,11 +470,13 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
       }
 
+      // In your renderListings function
       querySnapshot.forEach((doc) => {
         const listing = doc.data();
-        const listingCard = document.createElement("div");
+        const listingCard = document.createElement("a");
         listingCard.classList.add("listing-card");
-
+        listingCard.href = `listing-details.html?id=${doc.id}`; // Pass listing ID in URL
+        
         listingCard.innerHTML = `
           <div class="listing-image">
             <img src="${listing.imageUrl}" alt="${listing.title}">
@@ -468,17 +501,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Initial Fetch
     fetchListings(); // Fetch all listings by default
-    if (user) {
-      // User is logged in, show the logout button
-      if (logoutButton) {
-        logoutButton.style.display = "block";
-      }
-    } else {
-      // User is not logged in, hide the logout button
-      if (logoutButton) {
-        logoutButton.style.display = "none";
-      }
-    }
     document.getElementById("search-btn").addEventListener("click", async () => {
       const searchQuery = document.getElementById("search-input").value.toLowerCase();
       const listingsContainer = document.querySelector(".listings-container");
@@ -503,30 +525,31 @@ document.addEventListener("DOMContentLoaded", () => {
         console.error("Error searching listings: ", error);
       }
       });
-  }else if (currentPage === "upload") {
+  }
+  // ========================== Upload Page ========================== //
+  else if (currentPage === "upload") {
     const auth = getAuth();
-
+    let currentUser = null; // To store the authenticated user
+  
     onAuthStateChanged(auth, (user) => {
-      if (user) {
-        // User is logged in, show the logout button
-        if (logoutButton) {
-          logoutButton.style.display = "block";
-        }
+      if (!user) {
+        window.location.href = "index.html";
       } else {
-        // User is not logged in, hide the logout button
-        if (logoutButton) {
-          window.location.href = "index.html";
-          logoutButton.style.display = "none";
-        }
+        currentUser = user; // Store the logged-in user
       }
     });
+  
     // Handle the form submission for uploading items
     const uploadForm = document.getElementById("upload-form");
-
+  
     if (uploadForm) {
       uploadForm.addEventListener("submit", async (event) => {
         event.preventDefault(); 
-        // Prevent page reload
+        
+        if (!currentUser) {
+          alert("You must be logged in to upload items.");
+          return;
+        }
   
         // Get form values
         const title = document.getElementById("title").value;
@@ -541,29 +564,20 @@ document.addEventListener("DOMContentLoaded", () => {
         // Check if an image file was uploaded
         if (imageInput.files.length > 0) {
           const imageFile = imageInput.files[0];
-  
           try {
-            
-            // 1. Upload the image to Cloudinary
             imageUrl = await uploadImageToCloudinary(imageFile);
-  
-            // Apply Cloudinary template (e.g., resize to 500x500)
-            imageUrl = imageUrl.replace(
-              "/upload/",
-              "/upload/w_500,h_500,c_fill/"
-            );
+            imageUrl = imageUrl.replace("/upload/", "/upload/w_500,h_500,c_fill/");
           } catch (error) {
-            console.error("Error uploading image to Cloudinary:", error);
+            console.error("Error uploading image:", error);
             alert("Failed to upload image. Please try again.");
             return;
           }
         } else {
-          // Use a placeholder image URL if no image is uploaded
           imageUrl = `https://res.cloudinary.com/dqnoqh0hi/image/upload/cld-sample-5`;
         }
   
         try {
-          // 2. Save listing to Firestore
+          // Save listing with user ID
           const docRef = await addDoc(collection(db, "listings"), {
             title,
             category,
@@ -571,20 +585,23 @@ document.addEventListener("DOMContentLoaded", () => {
             description,
             condition,
             imageUrl,
-            createdAt: new Date().toISOString(),
+            userId: currentUser.uid, // Add user ID to the listing
+            createdAt: serverTimestamp(), // Use server timestamp
           });
   
           console.log("Listing added with ID:", docRef.id);
           alert("Item uploaded successfully!");
-          uploadForm.reset(); // Clear the form
-          document.getElementById("image-preview").style.display = "none"; // Hide preview
+          uploadForm.reset();
+          document.getElementById("image-preview").style.display = "none";
         } catch (error) {
           console.error("Error uploading item:", error);
           alert("Failed to upload item. Please try again.");
         }
       });
     }
-  }else if (currentPage === "profile") {
+  }
+  // ========================== Profile Page ========================== //
+  else if (currentPage === "profile") {
     const auth = getAuth();
     const db = getFirestore();
 
@@ -592,9 +609,6 @@ document.addEventListener("DOMContentLoaded", () => {
       if (user) {
         // Fetch user data from Firestore
         const userDoc = await getDoc(doc(db, "users", user.uid));
-        if (logoutButton) {
-          logoutButton.style.display = "block";
-        }
         if (userDoc.exists()) {
           const userData = userDoc.data();
 
@@ -656,6 +670,206 @@ document.addEventListener("DOMContentLoaded", () => {
         alert("Failed to update username. Please try again.");
       }
     }); 
+  }
+  // ========================== Listing Details Page ========================== //
+  else if (currentPage === "listing-details") {
+    const urlParams = new URLSearchParams(window.location.search);
+    const listingId = urlParams.get('id');
+    const auth = getAuth();
+
+    // Get elements
+    const mainImage = document.getElementById('main-listing-image');
+    const titleElement = document.getElementById('listing-title');
+    const priceElement = document.getElementById('listing-price');
+    const conditionElement = document.getElementById('listing-condition');
+    const dateElement = document.getElementById('listing-date');
+    const descriptionElement = document.getElementById('listing-description');
+    const sellerAvatar = document.getElementById('seller-avatar');
+    const sellerName = document.getElementById('seller-name');
+    const sellerJoined = document.getElementById('seller-joined');
+    const contactButton = document.getElementById('contact-seller');
+
+    // Fetch listing details
+    async function loadListingDetails() {
+        try {
+            const listingDoc = await getDoc(doc(db, "listings", listingId));
+            if (!listingDoc.exists()) {
+                throw new Error("Listing not found");
+            }
+
+            const listingData = listingDoc.data();
+            
+            // Populate listing data
+            mainImage.src = listingData.imageUrl;
+            titleElement.textContent = listingData.title;
+            priceElement.textContent = `£${listingData.price.toFixed(2)}`;
+            conditionElement.textContent = `Condition: ${listingData.condition}`;
+            dateElement.textContent = `Listed: ${new Date(listingData.createdAt?.toDate()).toLocaleDateString()}`;
+            descriptionElement.textContent = listingData.description;
+
+            // Fetch seller information
+            const userDoc = await getDoc(doc(db, "users", listingData.userId));
+            if (userDoc.exists()) {
+                const userData = userDoc.data();
+                sellerAvatar.src = userData.profilePicture;
+                sellerName.textContent = userData.username;
+                sellerJoined.textContent = `Member since ${new Date(userData.createdAt?.toDate()).getFullYear()}`;
+            }
+
+            // Handle contact button
+            contactButton.addEventListener('click', () => {
+                if (auth.currentUser) {
+                    // Implement contact functionality
+                    alert("Contact form or chat implementation would go here");
+                } else {
+                    alert("Please log in to contact the seller");
+                    window.location.href = "login.html";
+                }
+            });
+
+        } catch (error) {
+            console.error("Error loading listing:", error);
+            alert("Listing not found");
+            window.location.href = "listings.html";
+        }
+    }
+
+    loadListingDetails();
+
+    // Add this after loading listing details
+    const currentUser = auth.currentUser;
+    
+    // Determine if user is seller
+    const isSeller = currentUser && currentUser.uid === listingData.userId;
+    
+    // Show appropriate buttons
+    if (isSeller) {
+      document.getElementById('edit-listing').classList.remove('hidden');
+      document.getElementById('start-chat').classList.add('hidden');
+    }
+
+    // Chat modal handling
+    const chatModal = document.getElementById('chat-modal');
+    const chatMessages = document.querySelector('.chat-messages');
+    const messageInput = document.getElementById('message-input');
+
+    document.getElementById('start-chat').addEventListener('click', async () => {
+      if (!currentUser) {
+        alert('Please login to start chatting');
+        window.location.href = 'login.html';
+        return;
+      }
+      
+      chatModal.classList.remove('hidden');
+      loadChatMessages();
+    });
+
+    async function loadChatMessages() {
+      const chatId = await getOrCreateChat();
+      const messagesRef = collection(db, 'chats', chatId, 'messages');
+      
+      onSnapshot(query(messagesRef, orderBy('timestamp')), (snapshot) => {
+        chatMessages.innerHTML = '';
+        snapshot.forEach(doc => {
+          const msg = doc.data();
+          const messageDiv = document.createElement('div');
+          messageDiv.className = `message ${msg.senderId === currentUser.uid ? 'sent' : 'received'}`;
+          messageDiv.innerHTML = `
+            <div class="message-content">${msg.text}</div>
+            <div class="message-time">${new Date(msg.timestamp?.toDate()).toLocaleTimeString()}</div>
+          `;
+          chatMessages.appendChild(messageDiv);
+        });
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+      });
+    }
+
+    async function getOrCreateChat() {
+      const chatsRef = collection(db, 'chats');
+      const q = query(chatsRef, 
+        where('participantIds', 'array-contains', currentUser.uid),
+        where('listingId', '==', listingId)
+      );
+
+      const snapshot = await getDocs(q);
+      if (!snapshot.empty) {
+        return snapshot.docs[0].id;
+      }
+
+      // Create new chat
+      const newChat = {
+        listingId,
+        participantIds: [listingData.userId, currentUser.uid],
+        listingTitle: listingData.title,
+        lastMessage: '',
+        timestamp: serverTimestamp()
+      };
+
+      const docRef = await addDoc(chatsRef, newChat);
+      return docRef.id;
+    }
+
+    document.getElementById('send-message').addEventListener('click', async () => {
+      const text = messageInput.value.trim();
+      if (!text) return;
+
+      const chatId = await getOrCreateChat();
+      const messagesRef = collection(db, 'chats', chatId, 'messages');
+      
+      await addDoc(messagesRef, {
+        text,
+        senderId: currentUser.uid,
+        timestamp: serverTimestamp()
+      });
+
+      messageInput.value = '';
+    });
+
+    // Close modal
+    document.querySelector('.close').addEventListener('click', () => {
+      chatModal.classList.add('hidden');
+    });
+  }
+  // ========================== Chat Page ========================== //
+  else if (currentPage === "chat-list") {
+    const auth = getAuth();
+    const chatList = document.querySelector('.chat-list');
+  
+    onAuthStateChanged(auth, async (user) => {
+      if (!user) {
+        window.location.href = 'login.html';
+        return;
+      }
+  
+      const chatsRef = collection(db, 'chats');
+      const q = query(chatsRef, 
+        where('participantIds', 'array-contains', user.uid),
+        orderBy('timestamp', 'desc')
+      );
+  
+      const unsubscribe = onSnapshot(q, (snapshot) => {
+        chatList.innerHTML = '';
+        snapshot.forEach(async doc => {
+          const chat = doc.data();
+          const otherUserId = chat.participantIds.find(id => id !== user.uid);
+          const userDoc = await getDoc(doc(db, 'users', otherUserId));
+          const userData = userDoc.data();
+  
+          const chatItem = document.createElement('a');
+          chatItem.className = 'chat-item';
+          chatItem.href = `chat.html?chatId=${doc.id}`;
+          chatItem.innerHTML = `
+            <img src="${userData.profilePicture}" alt="${userData.username}">
+            <div>
+              <h3>${userData.username}</h3>
+              <p>${chat.listingTitle}</p>
+              <p class="last-message">${chat.lastMessage}</p>
+            </div>
+          `;
+          chatList.appendChild(chatItem);
+        });
+      });
+    });
   }
 });
 

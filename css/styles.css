@@ -151,6 +151,72 @@ select {
     margin: 0 0 5px;
   }
   
+/* Listing Details Page */
+.listing-container {
+  display: flex;
+  gap: 2rem;
+  padding: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.image-gallery {
+  flex: 1;
+}
+
+.image-gallery img {
+  width: 100%;
+  border-radius: 8px;
+}
+
+.listing-info {
+  flex: 1;
+  padding: 1rem;
+}
+
+.price {
+  font-size: 2rem;
+  color: #2ecc71;
+  font-weight: bold;
+}
+
+.listing-meta {
+  display: flex;
+  gap: 1rem;
+  margin: 1rem 0;
+  color: #666;
+}
+
+.seller-info {
+  margin-top: 2rem;
+  padding: 1.5rem;
+  background: #f8f9fa;
+  border-radius: 8px;
+}
+
+#seller-details {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin: 1rem 0;
+}
+
+#seller-avatar {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+#contact-seller {
+  background: #3498db;
+  color: white;
+  padding: 12px 24px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 1rem;
+}
 /* Profile Page */
 #profile-section {
     max-width: 600px;

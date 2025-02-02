@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>MokeSell - Listings</title>
+        <link rel="stylesheet" href="../css/styles.css">
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Kanit:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Montserrat:ital,wght@0,100..900;1,100..900&family=Teko:wght@300..700&display=swap" rel="stylesheet">
+    </head>
+<body id="listing-details">
+    <header>
+        <h1>MokeSell Marketplace</h1>
+        <nav>
+            <ul>
+                <li><a href="index.html">Home</a></li>
+                <li><a href="listings.html">Listings</a></li>
+                <li><a href="upload.html">Upload Item</a></li>
+                <li><a href="profile.html">Profile</a></li>
+                <li><a href="#about">About</a></li>
+                <li><a href="#contact">Contact</a></li>
+                <li><a id="signup-link" href="signup.html">Sign Up</a></li>
+                <li><a id="login-link" href="login.html">Log in</a></li>
+                <li><button id="logout-btn">Logout</button></li>
+            </ul>
+        </nav>
+    </header>
+    <main class="listing-container">
+        <div class="image-gallery">
+            <img id="main-listing-image" src="" alt="Main listing image">
+        </div>
+        
+        <div class="listing-info">
+            <h1 id="listing-title"></h1>
+            <p class="price" id="listing-price"></p>
+            <div class="listing-meta">
+                <span id="listing-condition"></span>
+                <span id="listing-date"></span>
+            </div>
+            <p class="description" id="listing-description"></p>
+            
+            <div class="seller-info">
+                <h2>Seller Information</h2>
+                <div id="seller-details">
+                    <img src="" alt="Seller profile" id="seller-avatar">
+                    <div>
+                        <p id="seller-name"></p>
+                        <p id="seller-joined"></p>
+                    </div>
+                </div>
+                <button id="contact-seller">Contact Seller</button>
+                <div class="action-buttons">
+                    <button id="edit-listing" class="hidden">Edit Listing</button>
+                    <button id="start-chat">Chat with Seller</button>
+                  </div>
+                  
+                  <!-- Add this modal at bottom of page -->
+                  <div id="chat-modal" class="modal hidden">
+                    <div class="modal-content">
+                      <div class="chat-header">
+                        <h3>Chat about <span id="chat-listing-title"></span></h3>
+                        <span class="close">&times;</span>
+                      </div>
+                      <div class="chat-messages"></div>
+                      <div class="chat-input">
+                        <input type="text" id="message-input" placeholder="Type your message...">
+                        <button id="send-message">Send</button>
+                      </div>
+                    </div>
+                  </div>
+            </div>
+        </div>
+    </main>
+
+    <script type="module" src="../js/script.js"></script>
+</body>
+</html>
