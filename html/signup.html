@@ -17,8 +17,7 @@
                 <li><a href="profile.html">Profile</a></li>
                 <li><a href="#about">About</a></li>
                 <li><a href="#contact">Contact</a></li>
-                <li><a href="signup.html">Sign Up</a></li>
-                <li><a href="login.html">Log in</a></li>
+                <li><button id="logout-btn">Logout</button></li>
             </ul>
         </nav>
     </header>
@@ -53,7 +52,8 @@
 
             <div id="upload-section" style="display: none;">
                 <label for="profile-picture">Upload Profile Picture:</label>
-                <input type="file" id="profile-picture" accept="image/*">
+                <input type="file" id="profile-picture" accept="image/*" onchange="previewImage(event)">
+                <img id="image-preview" src="" alt="Image Preview" style="display: none; width: 100px; height: auto; margin-bottom: 10px;">
 
                 <button type="button" id="submit-form">Submit</button>
                 <button type="button" id="skip-upload">Skip</button>
@@ -69,5 +69,13 @@
     <script type="module" src="https://www.gstatic.com/firebasejs/9.16.0/firebase-auth.js"></script>
     <script type="module" src="https://www.gstatic.com/firebasejs/9.16.0/firebase-firestore.js"></script>
     <script type="module" src="../js/script.js"></script>
+    <script> 
+    // Function to preview the uploaded image
+        function previewImage(event) {
+         const imagePreview = document.getElementById('image-preview');
+         imagePreview.src = URL.createObjectURL(event.target.files[0]);
+         imagePreview.style.display = 'block';
+       }
+    </script>
 </body>
 </html>

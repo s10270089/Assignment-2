@@ -1,7 +1,7 @@
 // Firebase Modules
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.16.0/firebase-auth.js";
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.16.0/firebase-app.js";
-import { getFirestore, doc, setDoc, getDoc, getDocs, query, where, collection, addDoc } from "https://www.gstatic.com/firebasejs/9.16.0/firebase-firestore.js";
+import { getFirestore, doc, setDoc, getDoc, getDocs, query, where, collection, addDoc, serverTimestamp} from "https://www.gstatic.com/firebasejs/9.16.0/firebase-firestore.js";
 
 // Firebase configuration
 const firebaseConfig = {
@@ -39,9 +39,18 @@ const uploadImageToCloudinary = async (file) => {
     );
 
     const data = await response.json();
+    
+    if (!response.ok) {
+      throw new Error(data.error.message || "Cloudinary upload failed");
+    }
+
     return data.secure_url;
   } catch (error) {
-    console.error("Error uploading image to Cloudinary:", error);
+    console.error("Cloudinary Error Details:", {
+      errorName: error.name,
+      errorMessage: error.message,
+      errorStack: error.stack
+    });
     throw error;
   }
 };
@@ -78,6 +87,34 @@ function setCookie(name, value, days) {
 function clearCookie(name) {
   document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/;`;
 }
+
+// ===================== Firebase Service =====================
+const createFirebaseUser = async (email, password) => {
+  try {
+    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+    return userCredential.user;
+  } catch (error) {
+    console.error("Firebase Auth Error:", error);
+    throw new Error("Account creation failed. Please try different credentials");
+  }
+};
+
+const saveUserToFirestore = async (user, userData) => {
+  try {
+    console.log("Saving to Firestore:", {
+      uid: user.uid,
+      data: userData
+    });
+    
+    await setDoc(doc(db, "users", user.uid), userData);
+    
+    console.log("Firestore save successful");
+    return true;
+  } catch (error) {
+    console.error("Full Firestore error:", error);
+    throw new Error("Failed to save user profile");
+  }
+};
 
 
 // Page-Specific Functionality
@@ -149,17 +186,18 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Check if the user is already logged in
     onAuthStateChanged(auth, (user) => {
-      if (user) {
-        // User is logged in, redirect to home.html
-        window.location.href = "home.html";
+      if (user && !isSigningUp) {
+        // User is logged in and not in the middle of signing up
+        console.log("User is already logged in:", user.uid);
+        signupForm.style.display = "none"; // Hide the signup form
+        window.location.href = "home.html"; // Redirect to home.html
       } else {
-        // User is not logged in, hide the logout button
+        // User is not logged in or is in the middle of signing up
+        console.log("User is not logged in. Proceeding with signup.");
         if (logoutButton) {
-          logoutButton.style.display = "none";
+          logoutButton.style.display = "none"; // Hide the logout button
         }
-        // User is not logged in, proceed with the signup form
-        // Load country codes for the signup form
-        loadCountryCodes(); 
+        loadCountryCodes(); // Load country codes for the signup form
       }
     });
 
@@ -207,6 +245,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const skipUploadBtn = document.getElementById("skip-upload");
 
     let userData = {};
+    let submitHandlerAttached = false;
 
     nextBtn.addEventListener("click", () => {
       // Gather form data
@@ -293,45 +332,75 @@ document.addEventListener("DOMContentLoaded", () => {
       // Hide initial form and show profile picture upload section
       signupForm.style.display = "none";
       uploadSection.style.display = "block";
-    });
-
-    submitBtn.addEventListener("click", async () => {
-      const { username, email, password, phoneNumber } = userData;
-
-      // Create user in Firebase Authentication
-      try {
-        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-        const user = userCredential.user;
-
-        // Save additional data to Firestore
-        await setDoc(doc(db, "users", user.uid), {
-          username: username,
-          email: email,
-          phoneNumber: phoneNumber,
-          dob: userData.dob,
-          createdAt: new Date().toISOString()
-        });
-
-        // Handle profile picture upload (if any)
-        const profilePic = document.getElementById("profile-picture").files[0];
-        if (profilePic) {
-          const storageRef = firebase.storage().ref();
-          const picRef = storageRef.child(`profile_pictures/${user.uid}`);
-          await picRef.put(profilePic);
-          const picUrl = await picRef.getDownloadURL();
-        }
-
-        // Redirect to profile.html after successful signup
-        window.location.href = "profile.html";
-      } catch (error) {
-        alert("Error: " + error.message);
+      if (!submitHandlerAttached) {
+        submitBtn.addEventListener("click", handleSignupSubmission);
+        skipUploadBtn.addEventListener("click", handleSignupSubmission);
+        submitHandlerAttached = true;
+        console.log("Firebase initialized:", app);
+        console.log("Firestore instance:", db); 
       }
     });
+    let isSigningUp = false; // Flag to track signup progress
+    async function handleSignupSubmission() {
+      try {
+        isSigningUp = true; // Set flag to true during signup
+        console.log("[1] Starting signup process");
+        const { username, email, password, phoneNumber, dob } = userData;
+        
+        console.log("[2] Creating Firebase auth user");
+        const user = await createFirebaseUser(email, password);
+        console.log("[3] Auth user created:", user.uid);
 
-    skipUploadBtn.addEventListener("click", () => {
-      // Skip profile picture upload and proceed to submit
-      submitBtn.click();
-    });
+        let imageUrl = "https://res.cloudinary.com/dqnoqh0hi/image/upload/cld-sample-5";
+        const imageInput = document.getElementById("profile-picture");
+        
+        if (imageInput.files.length > 0) {
+          try {
+            console.log("[4] Attempting image upload");
+            imageUrl = await uploadImageToCloudinary(imageInput.files[0]);
+            console.log("[5] Image upload successful:", imageUrl);
+          } catch (error) {
+            console.log("[6] Using default image due to error:", error.message);
+          }
+        }
+
+        console.log("[7] Preparing Firestore data:", {
+          username,
+          email,
+          phoneNumber,
+          dob,
+          profilePicture: imageUrl,
+          createdAt: serverTimestamp()
+        });
+
+        // Save user data to Firestore
+        await saveUserToFirestore(user, {
+          username,
+          email,
+          phoneNumber,
+          dob: new Date(userData.dob).toISOString(),
+          profilePicture: imageUrl,
+          createdAt: serverTimestamp()
+        });
+
+        console.log("[8] Firestore save successful. Redirecting to profile.");
+        window.location.href = "profile.html"; // Redirect after Firestore save
+      } catch (error) {
+        console.error("[ERROR] Signup failed:", error);
+        alert(`Error: ${error.message}`);
+        
+        if (auth.currentUser) {
+          try {
+            console.log("Attempting user cleanup");
+            await auth.currentUser.delete();
+          } catch (deleteError) {
+            console.error("Cleanup failed:", deleteError);
+          }
+        }
+      } finally {
+        isSigningUp = false; // Reset flag after signup
+      }
+    }
   } else if (currentPage === "listings") {
     const logoutButton = document.getElementById("logout-btn");
     const listingsContainer = document.querySelector(".listings-container");
@@ -531,7 +600,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
           // Display user data
           document.getElementById("username-display").textContent = userData.username;
-          document.getElementById("profile-picture").src = userData.profilePicture || "https://via.placeholder.com/150"; // Default placeholder image
+          document.getElementById("image").src = userData.profilePicture
         } else {
           console.error("User document not found.");
         }
