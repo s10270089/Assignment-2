@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chat</title>
+  <link rel="stylesheet" href="../css/styles.css">
+</head>
+<body id="chat">
+  <header>
+    <h1>MokeSell Marketplace</h1>
+    <nav>
+      <ul>
+        <li><a href="index.html">Home</a></li>
+        <li><a href="listings.html">Listings</a></li>
+        <li><a href="upload.html">Upload Item</a></li>
+        <li><a href="profile.html">Profile</a></li>
+        <li><a href="#about">About</a></li>
+        <li><a href="#contact">Contact</a></li>
+        <li><button id="logout-btn">Logout</button></li>
+      </ul>
+    </nav>
+  </header>
+
+  <main class="chat-layout">
+    <!-- Chat List Sidebar -->
+    <aside class="chat-list-sidebar">
+      <h2>Your Chats</h2>
+      <div class="chat-list">
+        <!-- Chat items will be populated here -->
+      </div>
+    </aside>
+
+    <!-- Active Chat Container -->
+    <section class="active-chat-container">
+      <!-- Default message when no chat is selected -->
+      <p class="no-active-chat">Select a chat to start messaging.</p>
+
+      <!-- Listing Details (hidden by default) -->
+      <div class="listing-details" style="display: none;">
+        <img id="listing-image" src="" alt="Listing Image">
+        <h2 id="listing-title"></h2>
+        <p id="listing-price"></p>
+        <p id="listing-condition"></p>
+      </div>
+
+      <!-- Chat Messages (hidden by default) -->
+      <div class="chat-messages" style="display: none;"></div>
+
+      <!-- Message Input (hidden by default) -->
+      <div class="message-input" style="display: none;">
+        <input type="text" id="message-input" placeholder="Type your message...">
+        <button id="send-message">Send</button>
+      </div>
+    </section>
+  </main>
+
+  <script type="module" src="../js/script.js"></script>
+</body>
+</html>

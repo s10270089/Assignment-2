@@ -717,15 +717,65 @@ document.addEventListener("DOMContentLoaded", () => {
             }
 
             // Handle contact button
-            contactButton.addEventListener('click', () => {
-                if (auth.currentUser) {
-                    // Implement contact functionality
-                    alert("Contact form or chat implementation would go here");
-                } else {
-                    alert("Please log in to contact the seller");
-                    window.location.href = "login.html";
+            contactButton.addEventListener('click', async () => {
+              const auth = getAuth();
+              const currentUser = auth.currentUser;
+            
+              if (!currentUser) {
+                alert("Please log in to contact the seller");
+                window.location.href = "login.html";
+                return;
+              }
+            
+              try {
+                // Fetch listing details
+                const listingDoc = await getDoc(doc(db, "listings", listingId));
+                if (!listingDoc.exists()) {
+                  throw new Error("Listing not found");
                 }
+            
+                const listingData = listingDoc.data();
+            
+                // Create or get the chat ID
+                const chatId = await getOrCreateChat(currentUser.uid, listingData.userId, listingId, listingData.title);
+            
+                // Redirect to the chat page with the chat ID
+                window.location.href = `chat.html?chatId=${chatId}`;
+              } catch (error) {
+                console.error("Error starting chat:", error);
+                alert("Failed to start chat. Please try again.");
+              }
             });
+            
+            // Helper function to create or get a chat
+            async function getOrCreateChat(currentUserId, sellerUserId, listingId, listingTitle) {
+              const chatsRef = collection(db, "chats");
+            
+              // Check if a chat already exists between these users for this listing
+              const q = query(
+                chatsRef,
+                where("participantIds", "array-contains", currentUserId),
+                where("listingId", "==", listingId)
+              );
+            
+              const querySnapshot = await getDocs(q);
+              if (!querySnapshot.empty) {
+                // Return the existing chat ID
+                return querySnapshot.docs[0].id;
+              }
+            
+              // Create a new chat
+              const newChat = {
+                participantIds: [currentUserId, sellerUserId],
+                listingId,
+                listingTitle,
+                lastMessage: "",
+                timestamp: serverTimestamp(),
+              };
+            
+              const docRef = await addDoc(chatsRef, newChat);
+              return docRef.id;
+            }
 
         } catch (error) {
             console.error("Error loading listing:", error);
@@ -764,22 +814,26 @@ document.addEventListener("DOMContentLoaded", () => {
       loadChatMessages();
     });
 
-    async function loadChatMessages() {
-      const chatId = await getOrCreateChat();
-      const messagesRef = collection(db, 'chats', chatId, 'messages');
-      
-      onSnapshot(query(messagesRef, orderBy('timestamp')), (snapshot) => {
+    // Function to load chat messages
+    async function loadChatMessages(chatId) {
+      const messagesRef = collection(db, "chats", chatId, "messages");
+      const q = query(messagesRef, orderBy("timestamp", "asc"));
+
+      onSnapshot(q, (snapshot) => {
+        const chatMessages = document.querySelector('.chat-messages');
         chatMessages.innerHTML = '';
-        snapshot.forEach(doc => {
-          const msg = doc.data();
+        snapshot.forEach((doc) => {
+          const message = doc.data();
           const messageDiv = document.createElement('div');
-          messageDiv.className = `message ${msg.senderId === currentUser.uid ? 'sent' : 'received'}`;
+          messageDiv.className = `message ${message.senderId === user.uid ? 'sent' : 'received'}`;
           messageDiv.innerHTML = `
-            <div class="message-content">${msg.text}</div>
-            <div class="message-time">${new Date(msg.timestamp?.toDate()).toLocaleTimeString()}</div>
+            <div class="message-content">${message.text}</div>
+            <div class="message-time">${new Date(message.timestamp?.toDate()).toLocaleTimeString()}</div>
           `;
           chatMessages.appendChild(messageDiv);
         });
+
+        // Scroll to the bottom of the chat
         chatMessages.scrollTop = chatMessages.scrollHeight;
       });
     }
@@ -831,59 +885,115 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
   // ========================== Chat Page ========================== //
-  else if (currentPage === "chat-list") {
+  else if (currentPage === "chat") {
     const auth = getAuth();
     const chatList = document.querySelector('.chat-list');
+    const activeChatContainer = document.querySelector('.active-chat-container');
   
     onAuthStateChanged(auth, async (user) => {
       if (!user) {
-        window.location.href = 'login.html';
+        window.location.href = "login.html";
         return;
       }
   
-      const chatsRef = collection(db, 'chats');
-      const q = query(chatsRef, 
-        where('participantIds', 'array-contains', user.uid),
-        orderBy('timestamp', 'desc')
-      );
+      // Fetch and display chat list
+      const chatsRef = collection(db, "chats");
+      const q = query(chatsRef, where("participantIds", "array-contains", user.uid), orderBy("timestamp", "desc"));
   
-      const unsubscribe = onSnapshot(q, (snapshot) => {
+      onSnapshot(q, async (snapshot) => {
+        if (snapshot.empty) {
+          // No chats found
+          chatList.innerHTML = '<p class="no-chats-message">You have no chats here.</p>';
+          activeChatContainer.innerHTML = '<p class="no-active-chat">Select a chat to start messaging.</p>';
+          return;
+        }
+  
+        // Clear existing chat list
         chatList.innerHTML = '';
-        snapshot.forEach(async doc => {
+  
+        // Populate chat list
+        snapshot.forEach(async (doc) => {
           const chat = doc.data();
           const otherUserId = chat.participantIds.find(id => id !== user.uid);
-          const userDoc = await getDoc(doc(db, 'users', otherUserId));
+  
+          // Fetch other user's details
+          const userDoc = await getDoc(doc(db, "users", otherUserId));
+          if (!userDoc.exists()) return;
+  
           const userData = userDoc.data();
   
-          const chatItem = document.createElement('a');
+          // Create chat item
+          const chatItem = document.createElement('div');
           chatItem.className = 'chat-item';
-          chatItem.href = `chat.html?chatId=${doc.id}`;
+          chatItem.dataset.chatId = doc.id;
           chatItem.innerHTML = `
             <img src="${userData.profilePicture}" alt="${userData.username}">
             <div>
               <h3>${userData.username}</h3>
               <p>${chat.listingTitle}</p>
-              <p class="last-message">${chat.lastMessage}</p>
+              <p class="last-message">${chat.lastMessage || 'No messages yet'}</p>
             </div>
           `;
+  
+          // Add click event to load active chat
+          chatItem.addEventListener('click', () => {
+            loadActiveChat(doc.id, chat.listingId);
+          });
+  
           chatList.appendChild(chatItem);
         });
+  
+        // Load the first chat by default (if available)
+        if (snapshot.docs.length > 0) {
+          const firstChat = snapshot.docs[0];
+          loadActiveChat(firstChat.id, firstChat.data().listingId);
+        }
       });
     });
+  
+    // Function to load active chat
+    async function loadActiveChat(chatId, listingId) {
+      try {
+        // Hide the default message
+        document.querySelector('.no-active-chat').style.display = 'none';
+  
+        // Fetch listing details
+        const listingDoc = await getDoc(doc(db, "listings", listingId));
+        if (!listingDoc.exists()) {
+          throw new Error("Listing not found");
+        }
+  
+        const listingData = listingDoc.data();
+  
+        // Show chat components
+        document.querySelector('.listing-details').style.display = 'block';
+        document.querySelector('.chat-messages').style.display = 'block';
+        document.querySelector('.message-input').style.display = 'flex';
+  
+        // Display listing details
+        document.getElementById('listing-image').src = listingData.imageUrl;
+        document.getElementById('listing-title').textContent = listingData.title;
+        document.getElementById('listing-price').textContent = `Price: £${listingData.price.toFixed(2)}`;
+        document.getElementById('listing-condition').textContent = `Condition: ${listingData.condition}`;
+  
+        // Load chat messages
+        loadChatMessages(chatId);
+  
+        // Send message functionality
+        const messageInput = document.getElementById('message-input');
+        const sendMessageButton = document.getElementById('send-message');
+  
+        sendMessageButton.addEventListener('click', async () => {
+          const text = messageInput.value.trim();
+          if (!text) return;
+  
+          await sendMessage(chatId, text, user.uid);
+          messageInput.value = '';
+        });
+      } catch (error) {
+        console.error("Error loading chat:", error);
+        alert("Failed to load chat. Please try again.");
+      }
+    }
   }
 });
-
-// function getCookie(name) {
-//   const value = `; ${document.cookie}`;
-//   const parts = value.split(`; ${name}=`);
-//   if (parts.length === 2) return parts.pop().split(";").shift();
-//   return null;
-// }
-
-// window.onload = function () {
-//   const userUID = getCookie("userUID");
-//   if (!userUID) {
-//     alert("You must log in to access this page.");
-//     window.location.href = "index.html"; // Redirect to login page
-//   }
-// };
