@@ -5,22 +5,34 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MokeSell - Profile</title>
     <link rel="stylesheet" href="../css/styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
 </head>
-<body id="profile">
-    <header>
-        <h1>MokeSell Marketplace</h1>
-        <nav>
+<body id="profile" class="inner">
+    <header class="inner-header">
+        <div class="header-container">
+          <!-- Left: Logo -->
+          <div class="logo">
+            <a href="index.html">
+              <img src="/assets/photos/Logo-bg-removed.png" alt="MokeSell">
+            </a>
+          </div>
+          <!-- Center: Navigation Menu -->
+          <nav class="main-nav">
             <ul>
-                <li><a href="index.html">Home</a></li>
-                <li><a href="listings.html">Listings</a></li>
-                <li><a href="upload.html">Upload Item</a></li>
-                <li><a href="profile.html">Profile</a></li>
-                <li><a href="#about">About</a></li>
-                <li><a href="#contact">Contact</a></li>
-                <li><button id="logout-btn">Logout</button></li>
+              <li><a href="listings.html">Browse</a></li>
+              <li><a href="upload.html">Sell</a></li>
+              <li><a href="about.html">About</a></li>
+              <li><a href="contact.html">Contact</a></li>
             </ul>
-        </nav>
-    </header>
+          </nav>
+          <!-- Right: Utility Icons -->
+          <div class="header-icons">
+            <i id="search-btn" class="fa fa-search"></i>
+            <a href="account.html"><i class="fa fa-user"></i></a>
+            <a href="cart.html"><i class="fa fa-shopping-cart"></i></a>
+          </div>
+        </div>
+      </header>
 
     <main>
         <section id="profile-section">

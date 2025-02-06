@@ -1,7 +1,7 @@
 // Firebase Modules
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.16.0/firebase-auth.js";
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.16.0/firebase-app.js";
-import { getFirestore, doc, setDoc, getDoc, getDocs, query, where, collection, addDoc, serverTimestamp} from "https://www.gstatic.com/firebasejs/9.16.0/firebase-firestore.js";
+import { getFirestore, doc, setDoc, getDoc, getDocs, query, where, collection, addDoc, serverTimestamp, orderBy, onSnapshot} from "https://www.gstatic.com/firebasejs/9.16.0/firebase-firestore.js";
 
 // Firebase configuration
 const firebaseConfig = {
@@ -740,7 +740,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 const chatId = await getOrCreateChat(currentUser.uid, listingData.userId, listingId, listingData.title);
             
                 // Redirect to the chat page with the chat ID
-                window.location.href = `chat.html?chatId=${chatId}`;
+                window.location.href = `chat.html?chatId=${chatId}&listingId=${listingId}`;
               } catch (error) {
                 console.error("Error starting chat:", error);
                 alert("Failed to start chat. Please try again.");
@@ -890,6 +890,9 @@ document.addEventListener("DOMContentLoaded", () => {
     const chatList = document.querySelector('.chat-list');
     const activeChatContainer = document.querySelector('.active-chat-container');
   
+    const urlParams = new URLSearchParams(window.location.search);
+    const chatId = urlParams.get('chatId');
+    const listingId = urlParams.get('listingId');
     onAuthStateChanged(auth, async (user) => {
       if (!user) {
         window.location.href = "login.html";
@@ -954,17 +957,41 @@ document.addEventListener("DOMContentLoaded", () => {
     // Function to load active chat
     async function loadActiveChat(chatId, listingId) {
       try {
-        // Hide the default message
-        document.querySelector('.no-active-chat').style.display = 'none';
-  
         // Fetch listing details
         const listingDoc = await getDoc(doc(db, "listings", listingId));
+        if (listingDoc.exists()) {
+          const listingData = listingDoc.data();
+          // Update listing details display
+          document.getElementById('listing-image').src = listingData.imageUrl;
+          document.getElementById('listing-title').textContent = listingData.title;
+          document.getElementById('listing-price').textContent = `£${listingData.price.toFixed(2)}`;
+          document.getElementById('listing-condition').textContent = listingData.condition;
+        }
         if (!listingDoc.exists()) {
           throw new Error("Listing not found");
         }
   
         const listingData = listingDoc.data();
   
+         // Get chat document
+        const chatDoc = await getDoc(doc(db, "chats", chatId));
+        const chatData = chatDoc.data();
+        
+        // Find other user's ID
+        const otherUserId = chatData.participantIds.find(id => id !== user.uid);
+          
+        // Get other user's data
+        const otherUserDoc = await getDoc(doc(db, "users", otherUserId));
+        const otherUserData = otherUserDoc.data();
+
+        // Update UI
+        document.getElementById('other-user-avatar').src = otherUserData.profilePicture;
+        document.getElementById('other-user-name').textContent = otherUserData.username;
+        document.getElementById('listing-title-chat').textContent = chatData.listingTitle;
+
+        // Hide the default message
+        document.querySelector('.no-active-chat').style.display = 'none';
+
         // Show chat components
         document.querySelector('.listing-details').style.display = 'block';
         document.querySelector('.chat-messages').style.display = 'block';
@@ -976,6 +1003,31 @@ document.addEventListener("DOMContentLoaded", () => {
         document.getElementById('listing-price').textContent = `Price: £${listingData.price.toFixed(2)}`;
         document.getElementById('listing-condition').textContent = `Condition: ${listingData.condition}`;
   
+        // In loadActiveChat function
+        const messagesRef = collection(db, "chats", chatId, "messages");
+        const q = query(messagesRef, orderBy("timestamp", "asc"));
+
+        const unsubscribe = onSnapshot(q, (snapshot) => {
+          const chatMessages = document.querySelector('.chat-messages');
+          chatMessages.innerHTML = '';
+          
+          snapshot.forEach((doc) => {
+            const message = doc.data();
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${message.senderId === user.uid ? 'sent' : 'received'}`;
+            messageDiv.innerHTML = `
+              <div class="message-content">${message.text}</div>
+              <div class="message-time">
+                ${new Date(message.timestamp?.toDate()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+              </div>
+            `;
+            chatMessages.appendChild(messageDiv);
+          });
+          
+          // Scroll to bottom
+          chatMessages.scrollTop = chatMessages.scrollHeight;
+        });
+
         // Load chat messages
         loadChatMessages(chatId);
   
