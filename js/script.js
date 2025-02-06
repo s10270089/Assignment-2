@@ -1,8 +1,7 @@
 // Firebase Modules
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.16.0/firebase-auth.js";
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.16.0/firebase-app.js";
-import { getFirestore, doc, setDoc, getDoc, getDocs, query, where, collection, addDoc, serverTimestamp, orderBy, onSnapshot} from "https://www.gstatic.com/firebasejs/9.16.0/firebase-firestore.js";
-
+import { getFirestore, doc, setDoc, getDoc, getDocs, query, where, collection, addDoc, serverTimestamp, orderBy, onSnapshot } from "https://www.gstatic.com/firebasejs/9.16.0/firebase-firestore.js";
 // Firebase configuration
 const firebaseConfig = {
   apiKey: "AIzaSyDqYtQAxeSDqaXdReUFdP2goqHfgTj0sNM",
@@ -678,7 +677,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const auth = getAuth();
 
     // Get elements
-    const mainImage = document.getElementById('main-listing-image');
+    const mainImage = document.getElementById('listing-image');
     const titleElement = document.getElementById('listing-title');
     const priceElement = document.getElementById('listing-price');
     const conditionElement = document.getElementById('listing-condition');
@@ -754,7 +753,7 @@ document.addEventListener("DOMContentLoaded", () => {
               // Check if a chat already exists between these users for this listing
               const q = query(
                 chatsRef,
-                where("participantIds", "array-contains", currentUserId),
+                where("participantsIds", "array-contains", currentUserId),
                 where("listingId", "==", listingId)
               );
             
@@ -766,7 +765,7 @@ document.addEventListener("DOMContentLoaded", () => {
             
               // Create a new chat
               const newChat = {
-                participantIds: [currentUserId, sellerUserId],
+                participantsIds: [currentUserId, sellerUserId],
                 listingId,
                 listingTitle,
                 lastMessage: "",
@@ -841,7 +840,7 @@ document.addEventListener("DOMContentLoaded", () => {
     async function getOrCreateChat() {
       const chatsRef = collection(db, 'chats');
       const q = query(chatsRef, 
-        where('participantIds', 'array-contains', currentUser.uid),
+        where('participantsIds', 'array-contains', currentUser.uid),
         where('listingId', '==', listingId)
       );
 
@@ -853,7 +852,7 @@ document.addEventListener("DOMContentLoaded", () => {
       // Create new chat
       const newChat = {
         listingId,
-        participantIds: [listingData.userId, currentUser.uid],
+        participantsIds: [listingData.userId, currentUser.uid],
         listingTitle: listingData.title,
         lastMessage: '',
         timestamp: serverTimestamp()
@@ -901,7 +900,7 @@ document.addEventListener("DOMContentLoaded", () => {
   
       // Fetch and display chat list
       const chatsRef = collection(db, "chats");
-      const q = query(chatsRef, where("participantIds", "array-contains", user.uid), orderBy("timestamp", "desc"));
+      const q = query(chatsRef, where("participantsIds", "array-contains", user.uid), orderBy("timestamp", "desc"));
   
       onSnapshot(q, async (snapshot) => {
         if (snapshot.empty) {
@@ -917,7 +916,7 @@ document.addEventListener("DOMContentLoaded", () => {
         // Populate chat list
         snapshot.forEach(async (doc) => {
           const chat = doc.data();
-          const otherUserId = chat.participantIds.find(id => id !== user.uid);
+          const otherUserId = chat.participantsIds.find(id => id !== user.uid);
   
           // Fetch other user's details
           const userDoc = await getDoc(doc(db, "users", otherUserId));
@@ -959,93 +958,130 @@ document.addEventListener("DOMContentLoaded", () => {
       try {
         // Fetch listing details
         const listingDoc = await getDoc(doc(db, "listings", listingId));
-        if (listingDoc.exists()) {
-          const listingData = listingDoc.data();
-          // Update listing details display
-          document.getElementById('listing-image').src = listingData.imageUrl;
-          document.getElementById('listing-title').textContent = listingData.title;
-          document.getElementById('listing-price').textContent = `£${listingData.price.toFixed(2)}`;
-          document.getElementById('listing-condition').textContent = listingData.condition;
-        }
         if (!listingDoc.exists()) {
           throw new Error("Listing not found");
         }
-  
+    
         const listingData = listingDoc.data();
-  
-         // Get chat document
-        const chatDoc = await getDoc(doc(db, "chats", chatId));
-        const chatData = chatDoc.data();
-        
-        // Find other user's ID
-        const otherUserId = chatData.participantIds.find(id => id !== user.uid);
-          
-        // Get other user's data
-        const otherUserDoc = await getDoc(doc(db, "users", otherUserId));
-        const otherUserData = otherUserDoc.data();
-
-        // Update UI
-        document.getElementById('other-user-avatar').src = otherUserData.profilePicture;
-        document.getElementById('other-user-name').textContent = otherUserData.username;
-        document.getElementById('listing-title-chat').textContent = chatData.listingTitle;
-
-        // Hide the default message
-        document.querySelector('.no-active-chat').style.display = 'none';
-
-        // Show chat components
-        document.querySelector('.listing-details').style.display = 'block';
-        document.querySelector('.chat-messages').style.display = 'block';
-        document.querySelector('.message-input').style.display = 'flex';
-  
-        // Display listing details
-        document.getElementById('listing-image').src = listingData.imageUrl;
-        document.getElementById('listing-title').textContent = listingData.title;
-        document.getElementById('listing-price').textContent = `Price: £${listingData.price.toFixed(2)}`;
-        document.getElementById('listing-condition').textContent = `Condition: ${listingData.condition}`;
-  
-        // In loadActiveChat function
-        const messagesRef = collection(db, "chats", chatId, "messages");
-        const q = query(messagesRef, orderBy("timestamp", "asc"));
-
-        const unsubscribe = onSnapshot(q, (snapshot) => {
-          const chatMessages = document.querySelector('.chat-messages');
-          chatMessages.innerHTML = '';
-          
-          snapshot.forEach((doc) => {
-            const message = doc.data();
-            const messageDiv = document.createElement('div');
-            messageDiv.className = `message ${message.senderId === user.uid ? 'sent' : 'received'}`;
-            messageDiv.innerHTML = `
-              <div class="message-content">${message.text}</div>
-              <div class="message-time">
-                ${new Date(message.timestamp?.toDate()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-              </div>
-            `;
-            chatMessages.appendChild(messageDiv);
-          });
-          
-          // Scroll to bottom
-          chatMessages.scrollTop = chatMessages.scrollHeight;
-        });
+    
+        // Ensure the elements exist before setting their properties
+        const listingImageElement = document.getElementById('listing-image');
+        const listingTitleElement = document.getElementById('listing-title');
+        const listingPriceElement = document.getElementById('listing-price');
+        const listingConditionElement = document.getElementById('listing-condition');
+    
+        if (listingImageElement) {
+          listingImageElement.src = listingData.imageUrl;
+        } else {
+          console.error("Element with ID 'listing-image' not found");
+        }
+    
+        if (listingTitleElement) {
+          listingTitleElement.textContent = listingData.title;
+        } else {
+          console.error("Element with ID 'listing-title' not found");
+        }
+    
+        if (listingPriceElement) {
+          listingPriceElement.textContent = `Price: £${listingData.price.toFixed(2)}`;
+        } else {
+          console.error("Element with ID 'listing-price' not found");
+        }
+    
+        if (listingConditionElement) {
+          listingConditionElement.textContent = `Condition: ${listingData.condition}`;
+        } else {
+          console.error("Element with ID 'listing-condition' not found");
+        }
+    
+        // Validate listingId
+        if (!listingId) {
+          throw new Error("Listing ID is missing.");
+        }
 
         // Load chat messages
         loadChatMessages(chatId);
-  
+    
         // Send message functionality
         const messageInput = document.getElementById('message-input');
         const sendMessageButton = document.getElementById('send-message');
-  
-        sendMessageButton.addEventListener('click', async () => {
-          const text = messageInput.value.trim();
-          if (!text) return;
-  
-          await sendMessage(chatId, text, user.uid);
-          messageInput.value = '';
-        });
+    
+        if (sendMessageButton && messageInput) {
+          sendMessageButton.addEventListener('click', async () => {
+            const text = messageInput.value.trim();
+            if (!text) return;
+    
+            await sendMessage(chatId, text, user.uid);
+            messageInput.value = '';
+          });
+        } else {
+          console.error("Message input or send button not found");
+        }
       } catch (error) {
         console.error("Error loading chat:", error);
         alert("Failed to load chat. Please try again.");
       }
     }
+    async function loadChatMessages(chatId) {
+      const messagesRef = collection(db, "chats", chatId, "messages");
+      const q = query(messagesRef, orderBy("timestamp", "asc"));
+  
+      // Clear previous messages
+      const chatMessagesContainer = document.querySelector(".chat-messages");
+      chatMessagesContainer.innerHTML = "";
+  
+      // Real-time listener for messages
+      onSnapshot(q, (snapshot) => {
+        snapshot.docChanges().forEach((change) => {
+          if (change.type === "added") {
+            const message = change.doc.data();
+            appendMessage(message);
+          }
+        });
+      });
+    }
+    function appendMessage(message) {
+      const chatMessages = document.querySelector(".chat-messages");
+      const messageDiv = document.createElement("div");
+      messageDiv.className = `message ${message.senderId === auth.currentUser.uid ? "sent" : "received"}`;
+      messageDiv.innerHTML = `
+        <div class="message-content">${message.text}</div>
+        <div class="message-time">
+          ${new Date(message.timestamp?.toDate()).toLocaleTimeString()}
+        </div>
+      `;
+      chatMessages.appendChild(messageDiv);
+      chatMessages.scrollTop = chatMessages.scrollHeight; // Auto-scroll
+    }
+  
+    // Define sendMessage function
+    async function sendMessage(chatId, text, senderId) {
+      try {
+        const messagesRef = collection(db, "chats", chatId, "messages");
+        await addDoc(messagesRef, {
+          text,
+          senderId,
+          timestamp: serverTimestamp(),
+        });
+      } catch (error) {
+        console.error("Error sending message:", error);
+        alert("Failed to send message.");
+      }
+    }
+  
+    // Update the send message event listener
+    document.getElementById("send-message").addEventListener("click", async () => {
+      const text = document.getElementById("message-input").value.trim();
+      if (!text) return;
+  
+      const user = auth.currentUser;
+      if (!user) {
+        alert("You must be logged in to send messages.");
+        return;
+      }
+  
+      await sendMessage(chatId, text, user.uid);
+      document.getElementById("message-input").value = "";
+    });
   }
 });

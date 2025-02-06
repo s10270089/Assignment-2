@@ -41,17 +41,24 @@
           <h2 id="other-user-name"></h2>
           <p id="listing-title-chat"></p>
         </div>
+        <div class="listing-preview">
+          <img id="listing-image" src="" alt="Listing Image">
+          <h1 id="listing-title"></h1>
+          <p id="listing-price"></p>
+          <p id="listing-condition"></p>
+        </div>
       </div>
     
-      <div class="chat-messages" style="display: none;"></div>
+      <div class="chat-messages"></div>
       
-      <div class="message-input" style="display: none;">
+      <div class="message-input">
         <input type="text" id="message-input" placeholder="Type your message...">
         <button id="send-message">Send</button>
       </div>
     </section>
   </main>
-
+  <script type="module" src="https://www.gstatic.com/firebasejs/9.16.0/firebase-app.js"></script>
+  <script type="module" src="https://www.gstatic.com/firebasejs/9.16.0/firebase-auth.js"></script>
   <script type="module" src="../js/script.js"></script>
 </body>
 </html>
