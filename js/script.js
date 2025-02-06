@@ -602,7 +602,6 @@ document.addEventListener("DOMContentLoaded", () => {
   // ========================== Profile Page ========================== //
   else if (currentPage === "profile") {
     const auth = getAuth();
-    const db = getFirestore();
 
     onAuthStateChanged(auth, async (user) => {
       if (user) {
@@ -914,12 +913,13 @@ document.addEventListener("DOMContentLoaded", () => {
         chatList.innerHTML = '';
   
         // Populate chat list
-        snapshot.forEach(async (doc) => {
-          const chat = doc.data();
+        snapshot.forEach(async (documents) => {
+          const chat = documents.data();
           const otherUserId = chat.participantsIds.find(id => id !== user.uid);
   
           // Fetch other user's details
           const userDoc = await getDoc(doc(db, "users", otherUserId));
+
           if (!userDoc.exists()) return;
   
           const userData = userDoc.data();
@@ -1011,7 +1011,9 @@ document.addEventListener("DOMContentLoaded", () => {
             const text = messageInput.value.trim();
             if (!text) return;
     
-            await sendMessage(chatId, text, user.uid);
+            const currentUser = auth.currentUser;
+
+            await sendMessage(chatId, text, currentUser.uid);
             messageInput.value = '';
           });
         } else {
@@ -1043,6 +1045,11 @@ document.addEventListener("DOMContentLoaded", () => {
     function appendMessage(message) {
       const chatMessages = document.querySelector(".chat-messages");
       const messageDiv = document.createElement("div");
+      const timestamp = message.timestamp?.toDate() || new Date();
+      const formattedTime = timestamp.toLocaleTimeString([], { 
+        hour: 'numeric', 
+        minute: '2-digit' 
+      });
       messageDiv.className = `message ${message.senderId === auth.currentUser.uid ? "sent" : "received"}`;
       messageDiv.innerHTML = `
         <div class="message-content">${message.text}</div>
@@ -1055,7 +1062,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   
     // Define sendMessage function
-    async function sendMessage(chatId, text, senderId) {
+    async function sendMessage(chatId, text, senderId, currentUser) {
       try {
         const messagesRef = collection(db, "chats", chatId, "messages");
         await addDoc(messagesRef, {
@@ -1074,13 +1081,13 @@ document.addEventListener("DOMContentLoaded", () => {
       const text = document.getElementById("message-input").value.trim();
       if (!text) return;
   
-      const user = auth.currentUser;
-      if (!user) {
+      const currentUser = auth.currentUser;
+      if (!currentUser) {
         alert("You must be logged in to send messages.");
         return;
       }
   
-      await sendMessage(chatId, text, user.uid);
+      await sendMessage(chatId, text, currentUser.uid);
       document.getElementById("message-input").value = "";
     });
   }
