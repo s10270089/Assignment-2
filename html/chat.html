@@ -47,17 +47,37 @@
     <section class="active-chat-container">
       <p class="no-active-chat">Select a chat to start messaging.</p>
       
-      <div class="chat-header" style="display: none;">
-        <img id="other-user-avatar" src="" alt="User Avatar">
-        <div>
-          <h2 id="other-user-name"></h2>
-          <p id="listing-title-chat"></p>
+      <div class="chat-header">
+        <div class="user-info">
+          <img id="other-user-avatar" src="" alt="User Avatar">
+          <div>
+            <h2 id="other-user-name"></h2>
+            <p id="listing-title-chat"></p>
+          </div>
         </div>
-        <div class="listing-preview">
-          <img id="listing-image" src="" alt="Listing Image">
-          <h1 id="listing-title"></h1>
-          <p id="listing-price"></p>
-          <p id="listing-condition"></p>
+        <div class="listing-container-chat">
+          <div class="listing-preview">
+            <img id="listing-image" src="" alt="Listing Image">
+            <h1 id="listing-title"></h1>
+            <p id="listing-price"></p>
+            <p id="listing-condition"></p>
+          </div>
+
+          <!-- Review Modal -->
+          <div id="review-modal" class="modal" style="display:none;">
+            <div class="modal-content">
+              <span class="close-button" onclick="closeReviewModal()">&times;</span>
+              <h2>Leave a Review</h2>
+              <input type="number" id="review-rating" placeholder="Rating (1-5)" min="1" max="5">
+              <textarea id="review-comment" placeholder="Write your review..."></textarea>
+              <button id="submit-review">Submit Review</button>
+            </div>
+          </div>
+          
+          <div class="offer-input">
+            <input type="number" id="offer-input" placeholder="Enter your offer">
+            <button id="send-offer">Send Offer</button>
+          </div>
         </div>
       </div>
     
