@@ -31,8 +31,17 @@
         <!-- Right: Utility Icons -->
         <div class="header-icons">
           <i id="search-btn" class="fa fa-search"></i>
-          <a href="account.html"><i class="fa fa-user"></i></a>
-          <a href="cart.html"><i class="fa fa-shopping-cart"></i></a>
+          <div class="dropdown">
+            <button class="dropbtn">
+              <i class="fa fa-user"></i>
+            </button>
+            <div class="dropdown-content">
+              <a href="profile.html">Profile</a>
+              <a href="settings.html">Settings</a>
+              <a href="#" id="logout-btn">Log Out</a>
+            </div>
+          </div>            
+        <a href="cart.html"><i class="fa fa-shopping-cart"></i></a>
         </div>
       </div>
     </header>
@@ -69,22 +78,23 @@
             <!-- Listing cards will be inserted here by script.js -->
           </div>
         </section>
-
+        <hr>
         <!-- Reviews Section -->
         <section id="reviews-section">
           <h2>Reviews</h2>
           <!-- Top Reviews -->
+          <h3>Top Reviews</h3>
           <div id="top-reviews">
-            <h3>Top Reviews</h3>
             <!-- Top reviews (up to 3) will be inserted here -->
           </div>
         </section>
+        <hr>
         <section id="all-reviews-section">
-<!-- All Reviews -->
-<div id="all-reviews">
-  <h3>All Reviews</h3>
-  <!-- All reviews will be inserted here by script.js -->
-</div>
+          <!-- All Reviews -->
+          <div id="all-reviews">
+            <h3>All Reviews</h3>
+            <!-- All reviews will be inserted here by script.js -->
+          </div>
         </section>
         
       </div>

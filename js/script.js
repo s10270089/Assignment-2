@@ -120,8 +120,32 @@ const saveUserToFirestore = async (user, userData) => {
 document.addEventListener("DOMContentLoaded", () => {
   const currentPage = document.body.id;
 
-  // Get references to the buttons
+  const dropbtn = document.querySelector(".dropbtn");
+  const dropdownContent = document.querySelector(".dropdown-content");
+
+  // Toggle dropdown when the user icon is clicked
+  dropbtn.addEventListener("click", (e) => {
+    e.stopPropagation(); // Prevent click from bubbling up
+    dropdownContent.classList.toggle("show");
+  });
+
+  // Hide the dropdown if the user clicks anywhere else
+  window.addEventListener("click", () => {
+    if (dropdownContent.classList.contains("show")) {
+      dropdownContent.classList.remove("show");
+    }
+  });
+
+  // Optional: Attach logout functionality to the Log Out button
   const logoutButton = document.getElementById("logout-btn");
+  if (logoutButton) {
+    logoutButton.addEventListener("click", (e) => {
+      e.preventDefault();
+      // Call your logout function here
+      logoutUser(); // Assuming you already have this defined
+    });
+  }
+  
   const signupLink = document.getElementById("signup-link");
   const loginLink = document.getElementById("login-link");
 
@@ -672,105 +696,163 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     }); 
     // Load the user's listings
-async function loadUserListings(userId) {
-  try {
-    const listingsRef = collection(db, "listings");
-    const q = query(listingsRef, where("userId", "==", userId));
-    const querySnapshot = await getDocs(q);
-    
-    const listingsContainer = document.getElementById("user-listings");
-    listingsContainer.innerHTML = "";
-    querySnapshot.forEach(docSnap => {
-      const listing = docSnap.data();
-      const listingCard = document.createElement("div");
-      listingCard.href = `listing-details.html?id=${doc.id}`;
-      listingCard.className = "listing-card";
-      listingCard.innerHTML = `
-        <img src="${listing.imageUrl}" alt="${listing.title}"">
-        <h4>${listing.title}</h4>
-        <p>£${listing.price.toFixed(2)}</p>
-      `;
-      listingsContainer.appendChild(listingCard);
-    });
-  } catch (error) {
-    console.error("Error loading listings:", error);
-  }
-}
-
-// Load all reviews (ordered by most recent)
-async function loadAllReviews(userId) {
-  try {
-    const reviewsRef = collection(db, "reviews");
-    const q = query(
-      reviewsRef,
-      where("revieweeId", "==", userId),
-      orderBy("timestamp", "desc")
-    );
-    const querySnapshot = await getDocs(q);
-    const allReviewsContainer = document.getElementById("all-reviews");
-    allReviewsContainer.innerHTML = "<h3>All Reviews</h3>";
-    let totalRating = 0;
-    querySnapshot.forEach(docSnap => {
-      const review = docSnap.data();
-      totalRating += review.rating;
-      const reviewElement = document.createElement("div");
-      let listingInfo = "";
-      if (review.listingId && review.listingTitle && review.listingImage) {
-        listingInfo = `
-          <div class="review-listing">
-            <a href="listing-details.html?id=${review.listingId}">
-              <img src="${review.listingImage}" alt="${review.listingTitle}" class="review-listing-image">
-              <span class="listing-title">${review.listingTitle}</span>
-            </a>
-          </div>
-        `;
+    async function loadUserListings(userId) {
+      try {
+        const listingsRef = collection(db, "listings");
+        const q = query(listingsRef, where("userId", "==", userId));
+        const querySnapshot = await getDocs(q);
+        
+        const listingsContainer = document.getElementById("user-listings");
+        listingsContainer.innerHTML = "";
+        querySnapshot.forEach(docSnap => {
+          const listing = docSnap.data();
+          const listingCard = document.createElement("div");
+          listingCard.href = `listing-details.html?id=${doc.id}`;
+          listingCard.className = "listing-card";
+          listingCard.innerHTML = `
+            <img src="${listing.imageUrl}" alt="${listing.title}"">
+            <h4>${listing.title}</h4>
+            <p>£${listing.price.toFixed(2)}</p>
+          `;
+          listingsContainer.appendChild(listingCard);
+        });
+      } catch (error) {
+        console.error("Error loading listings:", error);
       }
-      reviewElement.className = "review";
-      reviewElement.innerHTML = `
-        <div class="rating">${"★".repeat(review.rating)}</div>
-        <p class="comment">${review.comment}</p>
-        <small>${new Date(review.timestamp?.toDate()).toLocaleDateString()}</small>
-      `;
-      allReviewsContainer.appendChild(reviewElement);
-    });
-    // Optionally, calculate and display the average rating
-    const avgRating = totalRating / querySnapshot.size || 0;
-    document.getElementById("average-rating").textContent = `Average Rating: ${avgRating.toFixed(1)}/5`;
-  } catch (error) {
-    console.error("Error loading all reviews:", error);
-  }
-}
+    }
 
+    async function loadAllReviews(userId) {
+      try {
+        const reviewsRef = collection(db, "reviews");
+        const q = query(
+          reviewsRef,
+          where("revieweeId", "==", userId),
+          orderBy("timestamp", "desc")
+        );
+        const querySnapshot = await getDocs(q);
+        const allReviewsContainer = document.getElementById("all-reviews");
+        // Clear the container and add a heading.
+        allReviewsContainer.innerHTML = "<h3>All Reviews</h3>";
+        let totalRating = 0;
+        
+        // Use a for...of loop to allow for asynchronous operations.
+        for (const docSnap of querySnapshot.docs) {
+          const review = docSnap.data();
+          totalRating += review.rating;
+          
+          // Log the review to see its structure.
+          console.log("Review document:", review);
+          
+          // Attempt to get listing details.
+          let listingTitle = review.listingTitle;  // may already be stored with the review
+          let listingImage = review.listingImage;
+          
+          // If listingTitle or listingImage is missing, try to fetch from the listings collection.
+          if (review.listingId && (!listingTitle || !listingImage)) {
+            const listingDocSnap = await getDoc(doc(db, "listings", review.listingId));
+            if (listingDocSnap.exists()) {
+              const listingData = listingDocSnap.data();
+              listingTitle = listingData.title || listingTitle;
+              listingImage = listingData.imageUrl || listingImage;
+            } else {
+              console.warn("Listing document not found for listingId:", review.listingId);
+            }
+          }
+          
+          // Log listing info after attempting fetch.
+          console.log("Listing info:", {
+            listingId: review.listingId,
+            listingTitle,
+            listingImage
+          });
+          
+          let listingHtml = "";
+          if (review.listingId && listingTitle && listingImage) {
+            listingHtml = `
+              <div class="review-listing">
+                <a href="listing-details.html?id=${review.listingId}">
+                  <img src="${listingImage}" alt="${listingTitle}" class="review-listing-image">
+                  <span class="listing-title">${listingTitle}</span>
+                </a>
+              </div>
+            `;
+          } else {
+            console.warn("Incomplete listing info for review:", review);
+          }
+          
+          // Fetch reviewer details.
+          let reviewerHtml = "";
+          if (review.reviewerId) {
+            const userDoc = await getDoc(doc(db, "users", review.reviewerId));
+            if (userDoc.exists()) {
+              const reviewerData = userDoc.data();
+              reviewerHtml = `
+                <div class="reviewer-info">
+                  <a href="profile.html?uid=${review.reviewerId}" class="reviewer-link">
+                    <img src="${reviewerData.profilePicture}" alt="${reviewerData.username}" class="reviewer-image">
+                    <span class="reviewer-name">${reviewerData.username}</span>
+                  </a>
+                </div>
+              `;
+            }
+          }
+          
+          // Build the review card.
+          const reviewElement = document.createElement("div");
+          reviewElement.className = "review";
+          reviewElement.innerHTML = `
+            ${listingHtml}
+            ${reviewerHtml}
+            <div class="review-details">
+              <div class="rating">${"★".repeat(review.rating)}</div>
+              <p class="comment">${review.comment}</p>
+              <small>${new Date(review.timestamp?.toDate()).toLocaleDateString()}</small>
+            </div>
+          `;
+          
+          allReviewsContainer.appendChild(reviewElement);
+        }
+        
+        // Calculate and display the average rating.
+        const avgRating = totalRating / querySnapshot.size || 0;
+        document.getElementById("average-rating").textContent =
+          `Average Rating: ${avgRating.toFixed(1)}/5`;
+      } catch (error) {
+        console.error("Error loading all reviews:", error);
+      }
+    }
 
-// Load the top 3 reviews (ordered by highest rating)
-async function loadTopReviews(userId) {
-  try {
-    const reviewsRef = collection(db, "reviews");
-    const q = query(
-      reviewsRef,
-      where("revieweeId", "==", userId),
-      orderBy("rating", "desc"),
-      limit(3)
-    );
-    const querySnapshot = await getDocs(q);
-    const topReviewsContainer = document.getElementById("top-reviews");
-    // Clear the container while preserving the heading
-    topReviewsContainer.innerHTML = "<h3>Top Reviews</h3>";
-    querySnapshot.forEach(docSnap => {
-      const review = docSnap.data();
-      const reviewElement = document.createElement("div");
-      reviewElement.className = "review";
-      reviewElement.innerHTML = `
-        <div class="rating">${"★".repeat(review.rating)}</div>
-        <p class="comment">${review.comment}</p>
-        <small>${new Date(review.timestamp?.toDate()).toLocaleDateString()}</small>
-      `;
-      topReviewsContainer.appendChild(reviewElement);
-    });
-  } catch (error) {
-    console.error("Error loading top reviews:", error);
-  }
-}
+    // Load the top 3 reviews (ordered by highest rating)
+    async function loadTopReviews(userId) {
+      try {
+        const reviewsRef = collection(db, "reviews");
+        const q = query(
+          reviewsRef,
+          where("revieweeId", "==", userId),
+          orderBy("rating", "desc"),
+          limit(3)
+        );
+        const querySnapshot = await getDocs(q);
+        const topReviewsContainer = document.getElementById("top-reviews");
+        // Clear the container while preserving the heading
+        topReviewsContainer.innerHTML = "";
+        querySnapshot.forEach(docSnap => {
+          const review = docSnap.data();
+          const reviewElement = document.createElement("div");
+          reviewElement.className = "review";
+          reviewElement.innerHTML = `
+          <div class="top-review-details">
+            <div class="rating">${"★".repeat(review.rating)}</div>
+            <p class="comment">${review.comment}</p>
+            <small>${new Date(review.timestamp?.toDate()).toLocaleDateString()}</small>
+          </div>
+          `;
+          topReviewsContainer.appendChild(reviewElement);
+        });
+      } catch (error) {
+        console.error("Error loading top reviews:", error);
+      }
+    }
   }
   // ========================== Listing Details Page ========================== //
   else if (currentPage === "listing-details") {
@@ -1144,6 +1226,7 @@ async function loadTopReviews(userId) {
         const chatData = chatDocSnap.data();
         const currentUserId = auth.currentUser.uid;
         const otherUserId = chatData.participantsIds.find(id => id !== currentUserId);
+        window.otherUserId = otherUserId;
         const otherUserDocRef = doc(db, "users", otherUserId);
         const otherUserDocSnap = await getDoc(otherUserDocRef);
         if (otherUserDocSnap.exists()) {
@@ -1252,7 +1335,7 @@ async function loadTopReviews(userId) {
                   console.error("No message ID found for review");
                   return;
               }
-              openReviewModal(messageId, message.senderId);
+              openReviewModal(messageId, message.senderId, message.listingId, message.listingTitle, message.listingImage);
           };
           messageDiv.appendChild(reviewButton);
       }
@@ -1292,7 +1375,9 @@ async function loadTopReviews(userId) {
               reviewButton.textContent = "Leave Review";
               reviewButton.className = "review-btn";
               reviewButton.dataset.messageId = messageId;
-              reviewButton.onclick = () => openReviewModal(messageId, revieweeId);
+              const revieweeId = (currentUser.uid === message.senderId) ? window.otherUserId : message.senderId;
+              openReviewModal(messageId, revieweeId, message.listingId, message.listingTitle, message.listingImage);
+
               messageDiv.appendChild(reviewButton);
             }
           }).catch(error => {
@@ -1302,7 +1387,8 @@ async function loadTopReviews(userId) {
             reviewButton.textContent = "Leave Review";
             reviewButton.className = "review-btn";
             reviewButton.dataset.messageId = messageId;
-            reviewButton.onclick = () => openReviewModal(messageId, revieweeId);
+            const revieweeId = (currentUser.uid === message.senderId) ? window.otherUserId : message.senderId;
+            openReviewModal(messageId, revieweeId, message.listingId, message.listingTitle, message.listingImage);
             messageDiv.appendChild(reviewButton);
           });
         }
@@ -1318,6 +1404,8 @@ async function loadTopReviews(userId) {
       }
       chatMessages.appendChild(messageDiv);
       chatMessages.scrollTop = chatMessages.scrollHeight;
+      window.openReviewModal = openReviewModal;
+      window.closeReviewModal = closeReviewModal;
     }
     
     async function sendMessage(chatId, text, senderId, currentUser) {
@@ -1334,33 +1422,15 @@ async function loadTopReviews(userId) {
       }
     }
     let currentRevieweeId = null;
-    function openReviewModal(messageId, revieweeId) {
+    function openReviewModal(offerMessageId, revieweeId, listingId, listingTitle, listingImage) {
       const modal = document.getElementById("review-modal");
-      currentRevieweeId = revieweeId;
-      modal.dataset.offerMessageId = messageId;
+      modal.dataset.offerMessageId = offerMessageId;
       modal.dataset.revieweeId = revieweeId;
+      modal.dataset.listingId = listingId;
+      modal.dataset.listingTitle = listingTitle;
+      modal.dataset.listingImage = listingImage;
       modal.style.display = "block";
-  }
-
-    async function submitReview() {
-      const rating = document.getElementById('review-rating').value;
-      const comment = document.getElementById('review-comment').value;
-      const currentUser = auth.currentUser;
-
-      try {
-        await addDoc(collection(db, "reviews"), {
-          reviewerId: currentUser.uid,
-          revieweeId: currentRevieweeId,
-          rating: Number(rating),
-          comment,
-          timestamp: serverTimestamp()
-        });
-        closeReviewModal();
-      } catch (error) {
-        console.error("Error submitting review:", error);
-      }
     }
-
     if (submitOfferButton && offerInput && offerModal) {
       document.getElementById("send-offer").addEventListener("click", () => {
         offerModal.style.display = "block";
@@ -1400,7 +1470,7 @@ async function loadTopReviews(userId) {
         offerModal.style.display = "none";
       });
     }
-    document.getElementById('submit-review').addEventListener('click', submitReview);
+
     document.getElementById("close-offer-modal").addEventListener("click", () => {
     document.getElementById("offer-modal").style.display = "none";
     });
@@ -1409,34 +1479,40 @@ async function loadTopReviews(userId) {
       const modal = document.getElementById("review-modal");
       const offerMessageId = modal.dataset.offerMessageId;
       const revieweeId = modal.dataset.revieweeId;
-      
-      if (!offerMessageId || !revieweeId) {
-          alert("Error: Missing required review information");
-          return;
+      const listingId = modal.dataset.listingId;
+      const listingTitle = modal.dataset.listingTitle;
+      const listingImage = modal.dataset.listingImage;
+    
+      if (!offerMessageId || !revieweeId || !listingId) {
+        alert("Error: Missing required review information");
+        return;
       }
-  
+    
       const rating = parseInt(document.getElementById("review-rating").value.trim());
       const comment = document.getElementById("review-comment").value.trim();
       const currentUser = auth.currentUser;
-  
+    
       try {
-          await addDoc(collection(db, "reviews"), {
-              offerMessageId,
-              reviewerId: currentUser.uid,
-              revieweeId,
-              rating: Number(rating),
-              comment,
-              timestamp: serverTimestamp()
-          });
-          const messageRef = doc(db, "chats", chatId, "messages", offerMessageId);
-          await updateDoc(messageRef, { reviewLeft: true });
-          
-          closeReviewModal();
+        await addDoc(collection(db, "reviews"), {
+          offerMessageId,
+          reviewerId: currentUser.uid,
+          revieweeId,
+          listingId,
+          listingTitle,
+          listingImage,
+          rating: Number(rating),
+          comment,
+          timestamp: serverTimestamp()
+        });
+        const messageRef = doc(db, "chats", chatId, "messages", offerMessageId);
+        await updateDoc(messageRef, { reviewLeft: true });
+    
+        closeReviewModal();
       } catch (error) {
-          console.error("Review submission error:", error);
-          alert("Failed to submit review. Please try again.");
+        console.error("Review submission error:", error);
+        alert("Failed to submit review. Please try again.");
       }
-  });
+    });    
   }
 
   async function sendOffer(chatId, offerAmount) {
@@ -1453,11 +1529,29 @@ async function loadTopReviews(userId) {
   
     try {
       const messagesRef = collection(db, "chats", chatId, "messages");
+      const urlParams = new URLSearchParams(window.location.search);
+      const listingId = urlParams.get("listingId");
+
+      if (!listingId) {
+          console.error("Listing ID is missing in URL parameters");
+          return;
+      }
+
+      const listingDoc = await getDoc(doc(db, "listings", listingId));
+      if (!listingDoc.exists()) {
+          console.error("Listing not found");
+          return;
+      }
+
+      const listingData = listingDoc.data();
       await addDoc(messagesRef, {
         type: "offer",
         offerNumber: offerAmount,
         status: "pending",
         senderId: currentUser.uid,
+        listingId: listingId,
+        listingTitle: listingData.title,
+        listingImage: listingData.imageUrl,
         timestamp: serverTimestamp()
       });
     } catch (error) {
@@ -1490,37 +1584,12 @@ async function loadTopReviews(userId) {
         console.error("Error accepting offer:", error);
     }
 }
-
-  function openReviewModal(revieweeId) {
-    const modal = document.getElementById("review-modal");
-    modal.style.display = "block";
-    modal.dataset.revieweeId = revieweeId;
-  }
   function closeReviewModal() {
     const modal = document.getElementById("review-modal");
     modal.style.display = "none";
     delete modal.dataset.revieweeId;
   }
-  window.openReviewModal = openReviewModal;
-  window.closeReviewModal = closeReviewModal;
 
-  async function submitReview(offerMessageId, rating, comment, reviewerId) {
-    try {
-      const reviewsRef = collection(db, "reviews");
-      await addDoc(reviewsRef, {
-        offerMessageId,
-        rating,
-        comment,
-        reviewerId,
-        timestamp: serverTimestamp()
-      });
-     const messageDocRef = doc(db, "chats", chatId, "messages", offerMessageId);
-      await updateDoc(messageDocRef, { reviewLeft: true });
-    } catch (error) {
-      console.error("Error submitting review:", error);
-      alert("Failed to submit review.");
-    }
-  }
   async function checkReviewStatus(offerMessageId, reviewerId) {
     const reviewsRef = collection(db, "reviews");
     const q = query(

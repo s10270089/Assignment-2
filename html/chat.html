@@ -28,7 +28,16 @@
       <!-- Right: Utility Icons -->
       <div class="header-icons">
         <i id="search-btn" class="fa fa-search"></i>
-        <a href="profile.html"><i class="fa fa-user"></i></a>
+        <div class="dropdown">
+          <button class="dropbtn">
+            <i class="fa fa-user"></i>
+          </button>
+          <div class="dropdown-content">
+            <a href="profile.html">Profile</a>
+            <a href="settings.html">Settings</a>
+            <a href="#" id="logout-btn">Log Out</a>
+          </div>
+        </div>                    
         <a href="cart.html"><i class="fa fa-shopping-cart"></i></a>
       </div>
     </div>
@@ -86,12 +95,9 @@
               </div>
             </div>
           </div>
-          
         </div>
       </div>
-    
       <div class="chat-messages"></div>
-      
       <div class="message-input">
         <input type="text" id="message-input" placeholder="Type your message...">
         <button id="send-message">Send</button>
