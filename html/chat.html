@@ -39,7 +39,7 @@
     <aside class="chat-list-sidebar">
       <h2>Your Chats</h2>
       <div class="chat-list">
-        <!-- Chat items will be populated here -->
+        <!-- Chat items will be automatically populated here -->
       </div>
     </aside>
 
@@ -57,27 +57,36 @@
         </div>
         <div class="listing-container-chat">
           <div class="listing-preview">
-            <img id="listing-image" src="" alt="Listing Image">
+            <img id="chat-listing-image" src="" alt="Listing Image">
             <h1 id="listing-title"></h1>
             <p id="listing-price"></p>
             <p id="listing-condition"></p>
           </div>
 
-          <!-- Review Modal -->
-          <div id="review-modal" class="modal" style="display:none;">
-            <div class="modal-content">
-              <span class="close-button" onclick="closeReviewModal()">&times;</span>
-              <h2>Leave a Review</h2>
-              <input type="number" id="review-rating" placeholder="Rating (1-5)" min="1" max="5">
-              <textarea id="review-comment" placeholder="Write your review..."></textarea>
-              <button id="submit-review">Submit Review</button>
+          <div class="offer-container">
+            <button id="send-offer">Make Offer</button>
+            <!-- Offer Modal (aligned to the top) -->
+            <div id="offer-modal" class="modal">
+              <div id="modal-content">
+                <span class="close" id="close-offer-modal">&times;</span>
+                <h3>Make an Offer</h3>
+                <input type="number" id="offer-modal-input" min="1" step="0.01" placeholder="Enter offer amount">
+                <button id="submit-offer">Submit Offer</button>
+              </div>
+            </div>
+
+            <!-- Existing Review Modal (ensure functions for open/close are global) -->
+            <div id="review-modal" class="modal">
+              <div id="modal-content">
+                <span class="close" onclick="closeReviewModal()">&times;</span>
+                <h3>Leave a Review</h3>
+                <input type="number" id="review-rating" min="1" max="5" placeholder="Rating (1-5)">
+                <textarea id="review-comment" placeholder="Your review..."></textarea>
+                <button id="submit-review">Submit Review</button>
+              </div>
             </div>
           </div>
           
-          <div class="offer-input">
-            <input type="number" id="offer-input" placeholder="Enter your offer">
-            <button id="send-offer">Send Offer</button>
-          </div>
         </div>
       </div>
     

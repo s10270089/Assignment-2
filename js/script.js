@@ -1,7 +1,7 @@
 // Firebase Modules
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.16.0/firebase-auth.js";
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.16.0/firebase-app.js";
-import { getFirestore, doc, setDoc, getDoc, getDocs, query, where, collection, addDoc, serverTimestamp, orderBy, onSnapshot } from "https://www.gstatic.com/firebasejs/9.16.0/firebase-firestore.js";
+import { getFirestore, doc, setDoc, getDoc, getDocs, updateDoc, query, where, collection, addDoc, serverTimestamp, orderBy, onSnapshot } from "https://www.gstatic.com/firebasejs/9.16.0/firebase-firestore.js";
 // Firebase configuration
 const firebaseConfig = {
   apiKey: "AIzaSyDqYtQAxeSDqaXdReUFdP2goqHfgTj0sNM",
@@ -668,6 +668,45 @@ document.addEventListener("DOMContentLoaded", () => {
         alert("Failed to update username. Please try again.");
       }
     }); 
+    // In profile page section
+    async function loadReviews(userId) {
+      try {
+        const reviewsRef = collection(db, "reviews");
+        const q = query(reviewsRef, where("revieweeId", "==", userId));
+        const querySnapshot = await getDocs(q);
+
+        const reviewsContainer = document.getElementById('reviews-container');
+        reviewsContainer.innerHTML = '';
+
+        let totalRating = 0;
+        querySnapshot.forEach((doc) => {
+          const review = doc.data();
+          totalRating += review.rating;
+          
+          const reviewElement = document.createElement('div');
+          reviewElement.className = 'review';
+          reviewElement.innerHTML = `
+            <div class="rating">${'★'.repeat(review.rating)}</div>
+            <p class="comment">${review.comment}</p>
+            <small>${new Date(review.timestamp?.toDate()).toLocaleDateString()}</small>
+          `;
+          reviewsContainer.appendChild(reviewElement);
+        });
+
+        // Display average rating
+        const avgRating = totalRating / querySnapshot.size || 0;
+        document.getElementById('average-rating').textContent = 
+          `Average Rating: ${avgRating.toFixed(1)}/5`;
+          
+      } catch (error) {
+        console.error("Error loading reviews:", error);
+      }
+    }
+
+    // Call this in profile page auth state listener
+    if (user) {
+      loadReviews(user.uid);
+    }
   }
   // ========================== Listing Details Page ========================== //
   else if (currentPage === "listing-details") {
@@ -691,12 +730,17 @@ document.addEventListener("DOMContentLoaded", () => {
     async function loadListingDetails() {
         try {
             const listingDoc = await getDoc(doc(db, "listings", listingId));
+
             if (!listingDoc.exists()) {
                 throw new Error("Listing not found");
             }
 
             const listingData = listingDoc.data();
             
+            if (!listingData.userId) {
+              throw new Error("Listing data is missing user ID");
+            }
+
             // Populate listing data
             mainImage.src = listingData.imageUrl;
             titleElement.textContent = listingData.title;
@@ -747,6 +791,16 @@ document.addEventListener("DOMContentLoaded", () => {
             
             // Helper function to create or get a chat
             async function getOrCreateChat(currentUserId, sellerUserId, listingId, listingTitle) {
+              if (!currentUserId || !sellerUserId || !listingId || !listingTitle) {
+                console.error("Invalid parameters for chat creation:", {
+                  currentUserId,
+                  sellerUserId,
+                  listingId,
+                  listingTitle
+                });
+                throw new Error("Missing required parameters for chat creation");
+              }
+
               const chatsRef = collection(db, "chats");
             
               // Check if a chat already exists between these users for this listing
@@ -873,6 +927,8 @@ document.addEventListener("DOMContentLoaded", () => {
         senderId: currentUser.uid,
         timestamp: serverTimestamp()
       });
+      const messageInput = document.getElementById("message-input");
+      if (messageInput) messageInput.value = "";
 
       messageInput.value = '';
     });
@@ -882,7 +938,7 @@ document.addEventListener("DOMContentLoaded", () => {
       chatModal.classList.add('hidden');
     });
   }
-  // ========================== Chat Page ========================== //
+  // ======================================================== Chat Page =================================================================== //
   else if (currentPage === "chat") {
     const auth = getAuth();
     const chatList = document.querySelector('.chat-list');
@@ -891,6 +947,15 @@ document.addEventListener("DOMContentLoaded", () => {
     const urlParams = new URLSearchParams(window.location.search);
     const chatId = urlParams.get('chatId');
     const listingId = urlParams.get('listingId');
+
+    const offerModal = document.getElementById("offer-modal");
+    const offerInput = document.getElementById("offer-modal-input");
+    const submitOfferButton = document.getElementById("submit-offer");
+
+    const modalcontent = document.getElementById("modal-content");
+
+    const offerMessageId = document.getElementById("review-modal").dataset.offerMessageId;
+
     onAuthStateChanged(auth, async (user) => {
       if (!user) {
         window.location.href = "login.html";
@@ -958,6 +1023,11 @@ document.addEventListener("DOMContentLoaded", () => {
       try {
         // Fetch listing details
         const listingDoc = await getDoc(doc(db, "listings", listingId));
+        if (!chatId || !listingId) {
+          console.error("Invalid chatId or listingId");
+          return;
+        }
+
         if (!listingDoc.exists()) {
           throw new Error("Listing not found");
         }
@@ -975,7 +1045,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const listingData = listingDoc.data();
     
         // Ensure the elements exist before setting their properties
-        const listingImageElement = document.getElementById('listing-image');
+        const listingImageElement = document.getElementById('chat-listing-image');
         const listingTitleElement = document.getElementById('listing-title');
         const listingPriceElement = document.getElementById('listing-price');
         const listingConditionElement = document.getElementById('listing-condition');
@@ -1010,32 +1080,32 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         // Fetch the chat document to get the participants
-    const chatDocRef = doc(db, "chats", chatId);
-    const chatDocSnap = await getDoc(chatDocRef);
+        const chatDocRef = doc(db, "chats", chatId);
+        const chatDocSnap = await getDoc(chatDocRef);
 
-    if (!chatDocSnap.exists()) {
-      throw new Error("Chat not found");
-    }
+        if (!chatDocSnap.exists()) {
+          throw new Error("Chat not found");
+        }
 
-    const chatData = chatDocSnap.data();
-    // Assuming chatData.participantsIds is an array of user IDs
-    const currentUserId = auth.currentUser.uid;
-    // Filter out the current user to get the chat partner's ID
-    const otherUserId = chatData.participantsIds.find(id => id !== currentUserId);
+        const chatData = chatDocSnap.data();
+        // Assuming chatData.participantsIds is an array of user IDs
+        const currentUserId = auth.currentUser.uid;
+        // Filter out the current user to get the chat partner's ID
+        const otherUserId = chatData.participantsIds.find(id => id !== currentUserId);
 
-    // Fetch the chat partner's user document
-    const otherUserDocRef = doc(db, "users", otherUserId);
-    const otherUserDocSnap = await getDoc(otherUserDocRef);
+        // Fetch the chat partner's user document
+        const otherUserDocRef = doc(db, "users", otherUserId);
+        const otherUserDocSnap = await getDoc(otherUserDocRef);
 
-    if (otherUserDocSnap.exists()) {
-      const otherUserData = otherUserDocSnap.data();
-      // Now update the header's .user-info element with the fetched data
-      document.getElementById("other-user-avatar").src = otherUserData.profilePicture || "/default-avatar.png";
-      document.getElementById("other-user-name").textContent = otherUserData.username || "Unknown User";
-      // If you have other elements (e.g., status) update them here too.
-    } else {
-      console.error("Other user not found");
-    }
+        if (otherUserDocSnap.exists()) {
+          const otherUserData = otherUserDocSnap.data();
+          // Now update the header's .user-info element with the fetched data
+          document.getElementById("other-user-avatar").src = otherUserData.profilePicture || "/default-avatar.png";
+          document.getElementById("other-user-name").textContent = otherUserData.username || "Unknown User";
+          // If you have other elements (e.g., status) update them here too.
+        } else {
+          console.error("Other user not found");
+        }
 
     
         // Load chat messages
@@ -1104,42 +1174,49 @@ document.addEventListener("DOMContentLoaded", () => {
       const chatMessages = document.querySelector(".chat-messages");
       const messageDiv = document.createElement("div");
       const timestamp = message.timestamp?.toDate() || new Date();
-      const formattedTime = timestamp.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
-    
-      // Check if the message is an offer
+      const formattedTime = timestamp.toLocaleTimeString([], { 
+        hour: 'numeric', 
+        minute: '2-digit' 
+      });
+
+      const currentUser = auth.currentUser;
+      const isSender = currentUser && message.senderId === currentUser.uid;
+
       if (message.type === "offer") {
-        messageDiv.className = `message offer-message ${message.senderId === auth.currentUser.uid ? "sent" : "received"}`;
+        messageDiv.className = `message offer ${message.senderId === auth.currentUser.uid ? "sent" : "received"}`;
         messageDiv.innerHTML = `
-          <div class="offer-content">Offer: £${message.offerNumber}</div>
+          <div class="offer-content">
+            <strong>Offer:</strong> £${message.offerNumber}
+            ${message.status === "accepted" ? '<span class="offer-status accepted">Accepted</span>' : ''}
+          </div>
           <div class="message-time">${formattedTime}</div>
         `;
     
-        // If current user is the seller and the offer is pending, show "Accept Offer" button
-        if (message.senderId !== auth.currentUser.uid && message.status === "pending") {
-          const acceptBtn = document.createElement("button");
-          acceptBtn.textContent = "Accept Offer";
-          acceptBtn.addEventListener("click", () => {
-            acceptOffer(chatId, messageId);
-          });
-          messageDiv.appendChild(acceptBtn);
+        if (message.status === "pending" && !isSender) {
+          const acceptButton = document.createElement('button');
+          acceptButton.textContent = 'Accept Offer';
+          acceptButton.className = 'accept-offer-btn';
+          acceptButton.onclick = () => acceptOffer(chatId, messageId, message.senderId);
+          messageDiv.appendChild(acceptButton);
         }
-    
-        // If the offer is accepted, show a label and a review button
-        if (message.status === "accepted") {
-          const acceptedLabel = document.createElement("span");
-          acceptedLabel.textContent = "Offer Accepted";
-          acceptedLabel.classList.add("offer-accepted-label");
-          messageDiv.appendChild(acceptedLabel);
-    
-          // Optionally, if the user has not yet left a review, show a review button.
-          // (You might track this with an extra flag such as message.reviewLeft.)
-          const reviewBtn = document.createElement("button");
-          reviewBtn.textContent = "Leave a Review";
-          reviewBtn.addEventListener("click", () => {
-            openReviewForm(messageId); // Using the message's id as the offer identifier
-          });
-          messageDiv.appendChild(reviewBtn);
-        }
+        if (message.status === "accepted") {  
+          const reviewButton = document.createElement('button');
+          reviewButton.textContent = 'Leave Review';
+          reviewButton.className = 'review-btn';
+          
+          // Store the message ID directly on the button
+          reviewButton.dataset.messageId = messageId;
+          reviewButton.onclick = () => {
+              const messageId = reviewButton.dataset.messageId;
+              if (!messageId) {
+                  console.error("No message ID found for review");
+                  return;
+              }
+              openReviewModal(messageId, message.senderId);
+          };
+          messageDiv.appendChild(reviewButton);
+      }
+      
       } else {
         // Render as a regular text message
         messageDiv.className = `message ${message.senderId === auth.currentUser.uid ? "sent" : "received"}`;
@@ -1167,68 +1244,199 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     }
   
-    // Update the send message event listener
-    document.getElementById("send-message").addEventListener("click", async () => {
-      const text = document.getElementById("message-input").value.trim();
-      if (!text) return;
-  
+    // Review handling
+    let currentRevieweeId = null;
+
+    function openReviewModal(messageId, revieweeId) {
+      const modal = document.getElementById("review-modal");
+      currentRevieweeId = revieweeId;
+      
+      // Store both IDs on the modal
+      modal.dataset.offerMessageId = messageId;
+      modal.dataset.revieweeId = revieweeId;
+      modal.style.display = "block";
+  }
+
+    async function submitReview() {
+      const rating = document.getElementById('review-rating').value;
+      const comment = document.getElementById('review-comment').value;
       const currentUser = auth.currentUser;
-      if (!currentUser) {
-        alert("You must be logged in to send messages.");
-        return;
+
+      try {
+        await addDoc(collection(db, "reviews"), {
+          reviewerId: currentUser.uid,
+          revieweeId: currentRevieweeId,
+          rating: Number(rating),
+          comment,
+          timestamp: serverTimestamp()
+        });
+        closeReviewModal();
+      } catch (error) {
+        console.error("Error submitting review:", error);
+      }
+    }
+
+    if (submitOfferButton && offerInput && offerModal) {
+      // Open offer modal
+      document.getElementById("send-offer").addEventListener("click", () => {
+        offerModal.style.display = "block";
+        modalcontent.style.display = "block";
+      });
+  
+      // Handle offer submission
+      submitOfferButton.addEventListener("click", async () => {
+        try {
+          const offerValue = offerInput.value.trim();
+          const urlParams = new URLSearchParams(window.location.search);
+          const chatId = urlParams.get("chatId");
+  
+          // Validate inputs
+          if (!offerValue) {
+            alert("Please enter an offer amount");
+            return;
+          }
+  
+          if (!chatId) {
+            alert("Chat session error. Please reopen the chat.");
+            return;
+          }
+  
+          const offerNumber = parseFloat(offerValue);
+          if (isNaN(offerNumber) || offerNumber <= 0) {
+            alert("Please enter a valid positive number");
+            return;
+          }
+  
+          // Send offer
+          await sendOffer(chatId, offerNumber);
+          
+          // Clear and close
+          offerInput.value = "";
+          offerModal.style.display = "none";
+        } catch (error) {
+          console.error("Offer error:", error);
+          alert("Failed to submit offer. Please try again.");
+        }
+      });
+  
+      // Close modal
+      document.getElementById("close-offer-modal").addEventListener("click", () => {
+        offerModal.style.display = "none";
+      });
+    }
+    // Add event listeners
+    document.getElementById('submit-review').addEventListener('click', submitReview);
+
+    // Close offer modal when clicking the close icon
+    document.getElementById("close-offer-modal").addEventListener("click", () => {
+    document.getElementById("offer-modal").style.display = "none";
+    });
+
+    // Submit offer from modal
+    document.getElementById("submit-review").addEventListener("click", async () => {
+      const modal = document.getElementById("review-modal");
+      const offerMessageId = modal.dataset.offerMessageId;
+      const revieweeId = modal.dataset.revieweeId;
+      
+      if (!offerMessageId || !revieweeId) {
+          alert("Error: Missing required review information");
+          return;
       }
   
-      await sendMessage(chatId, text, currentUser.uid);
-      document.getElementById("message-input").value = "";
-    });
+      const rating = parseInt(document.getElementById("review-rating").value.trim());
+      const comment = document.getElementById("review-comment").value.trim();
+      const currentUser = auth.currentUser;
+  
+      try {
+          await addDoc(collection(db, "reviews"), {
+              offerMessageId,
+              reviewerId: currentUser.uid,
+              revieweeId,
+              rating: Number(rating),
+              comment,
+              timestamp: serverTimestamp()
+          });
+          
+          // Update the offer message to mark review as left
+          const messageRef = doc(db, "chats", currentChatId, "messages", offerMessageId);
+          await updateDoc(messageRef, { reviewLeft: true });
+          
+          closeReviewModal();
+      } catch (error) {
+          console.error("Review submission error:", error);
+          alert("Failed to submit review. Please try again.");
+      }
+  });
   }
-  // Function to send an offer message
-  async function sendOffer(chatId, offerNumber, senderId) {
+
+  // Send offer function
+  async function sendOffer(chatId, offerAmount) {
+    if (!chatId) {
+      console.error("Missing chat ID");
+      return;
+    }
+  
+    const currentUser = auth.currentUser;
+    if (!currentUser) {
+      alert("You must be logged in to make offers");
+      return;
+    }
+  
     try {
       const messagesRef = collection(db, "chats", chatId, "messages");
-      const offerMessage = {
-        type: "offer",          // Flag this as an offer message
-        offerNumber: parseFloat(offerNumber),
-        status: "pending",      // Other states: "accepted"
-        senderId,
+      await addDoc(messagesRef, {
+        type: "offer",
+        offerNumber: offerAmount,
+        status: "pending",
+        senderId: currentUser.uid,
         timestamp: serverTimestamp()
-      };
-      await addDoc(messagesRef, offerMessage);
+      });
     } catch (error) {
-      console.error("Error sending offer:", error);
-      alert("Failed to send offer.");
+      console.error("Offer submission failed:", error);
+      throw new Error("Failed to send offer");
     }
   }
-  // Attach event listener to the send-offer button
-  document.getElementById("send-offer").addEventListener("click", async () => {
-    const offerInput = document.getElementById("offer-input");
-    const offerNumber = offerInput.value.trim();
-    if (!offerNumber) return;
 
-    const currentUser = auth.currentUser;
-    await sendOffer(chatId, offerNumber, currentUser.uid);
-    offerInput.value = "";
-  });
-  async function acceptOffer(chatId, messageId) {
-    try {
-      const messageDocRef = doc(db, "chats", chatId, "messages", messageId);
-      await updateDoc(messageDocRef, { status: "accepted" });
-    } catch (error) {
-      console.error("Error accepting offer:", error);
-      alert("Failed to accept offer.");
+  // Accept offer
+  async function acceptOffer(chatId, messageId, senderId) {
+    if (!chatId || !messageId || !senderId) {
+        console.error("Missing required parameters:", { chatId, messageId, senderId });
+        return;
     }
-  }  
-  function openReviewForm(offerMessageId) {
+
+    try {
+        const messageRef = doc(db, "chats", chatId, "messages", messageId);
+        await updateDoc(messageRef, { status: "accepted" });
+
+        // Add notification for the sender
+        const notificationsRef = collection(db, "notifications");
+        await addDoc(notificationsRef, {
+            type: "offer-accepted",
+            userId: senderId, // Now using the passed senderId
+            message: "Your offer has been accepted!",
+            timestamp: serverTimestamp(),
+            read: false
+        });
+
+        console.log("Offer accepted successfully");
+    } catch (error) {
+        console.error("Error accepting offer:", error);
+    }
+}
+
+  function openReviewModal(revieweeId) {
     const modal = document.getElementById("review-modal");
     modal.style.display = "block";
-    modal.dataset.offerMessageId = offerMessageId; // Save the offer message id for later
+    modal.dataset.revieweeId = revieweeId;
   }
-  
   function closeReviewModal() {
     const modal = document.getElementById("review-modal");
     modal.style.display = "none";
-    delete modal.dataset.offerMessageId;
+    delete modal.dataset.revieweeId;
   }
+  window.openReviewModal = openReviewModal;
+  window.closeReviewModal = closeReviewModal;
+
   async function submitReview(offerMessageId, rating, comment, reviewerId) {
     try {
       // Create a new review document
@@ -1248,20 +1456,4 @@ document.addEventListener("DOMContentLoaded", () => {
       alert("Failed to submit review.");
     }
   }
-  
-  // Attach the event listener for review submission
-  document.getElementById("submit-review").addEventListener("click", async () => {
-    const modal = document.getElementById("review-modal");
-    const offerMessageId = modal.dataset.offerMessageId;
-    const rating = Number(document.getElementById("review-rating").value);
-    const comment = document.getElementById("review-comment").value;
-    if (!rating || rating < 1 || rating > 5) {
-      alert("Please enter a valid rating between 1 and 5");
-      return;
-    }
-    const currentUser = auth.currentUser;
-    await submitReview(offerMessageId, rating, comment, currentUser.uid);
-    closeReviewModal();
-  });
-    
 });
