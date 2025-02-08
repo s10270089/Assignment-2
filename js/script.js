@@ -468,8 +468,6 @@ document.addEventListener("DOMContentLoaded", () => {
         listingsContainer.innerHTML = "<p>No listings found.</p>";
         return;
       }
-
-      // In your renderListings function
       querySnapshot.forEach((doc) => {
         const listing = doc.data();
         const listingCard = document.createElement("a");
@@ -679,14 +677,16 @@ async function loadUserListings(userId) {
     const listingsRef = collection(db, "listings");
     const q = query(listingsRef, where("userId", "==", userId));
     const querySnapshot = await getDocs(q);
+    
     const listingsContainer = document.getElementById("user-listings");
     listingsContainer.innerHTML = "";
     querySnapshot.forEach(docSnap => {
       const listing = docSnap.data();
       const listingCard = document.createElement("div");
+      listingCard.href = `listing-details.html?id=${doc.id}`;
       listingCard.className = "listing-card";
       listingCard.innerHTML = `
-        <img src="${listing.imageUrl}" alt="${listing.title}">
+        <img src="${listing.imageUrl}" alt="${listing.title}"">
         <h4>${listing.title}</h4>
         <p>£${listing.price.toFixed(2)}</p>
       `;
@@ -708,13 +708,23 @@ async function loadAllReviews(userId) {
     );
     const querySnapshot = await getDocs(q);
     const allReviewsContainer = document.getElementById("all-reviews");
-    // Clear the container while preserving the heading
     allReviewsContainer.innerHTML = "<h3>All Reviews</h3>";
     let totalRating = 0;
     querySnapshot.forEach(docSnap => {
       const review = docSnap.data();
       totalRating += review.rating;
       const reviewElement = document.createElement("div");
+      let listingInfo = "";
+      if (review.listingId && review.listingTitle && review.listingImage) {
+        listingInfo = `
+          <div class="review-listing">
+            <a href="listing-details.html?id=${review.listingId}">
+              <img src="${review.listingImage}" alt="${review.listingTitle}" class="review-listing-image">
+              <span class="listing-title">${review.listingTitle}</span>
+            </a>
+          </div>
+        `;
+      }
       reviewElement.className = "review";
       reviewElement.innerHTML = `
         <div class="rating">${"★".repeat(review.rating)}</div>

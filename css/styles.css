@@ -540,9 +540,45 @@ select {
     padding: 20px;
     overflow-y: auto;
   }
+
+  #profile-info img{
+    max-width: 250px;
+  }
+
+  .reviews-section{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
   .profile-main-container{
     width: 80%;
+    padding-left: 20px;  }
+
+  .review-listing {
+    margin-bottom: 0.5rem;
   }
+
+  .review-listing a {
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+    color: inherit;
+  }
+
+  .review-listing-image {
+    width: 60px;
+    height: 60px;
+    object-fit: cover;
+    margin-right: 1rem;
+  }
+
+  .listing-title {
+    font-weight: bold;
+    font-size: 1rem;
+  }
+  
+  
   /* Chat List Page */
   /* Chat Layout */
 .chat-layout {
