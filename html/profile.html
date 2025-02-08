@@ -1,64 +1,104 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>MokeSell - Profile</title>
-    <link rel="stylesheet" href="../css/styles.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
-</head>
-<body id="profile" class="inner">
+    <link rel="stylesheet" href="../css/styles.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"
+    />
+  </head>
+  <body id="profile" class="inner">
     <header class="inner-header">
-        <div class="header-container">
-          <!-- Left: Logo -->
-          <div class="logo">
-            <a href="index.html">
-              <img src="/assets/photos/Logo-bg-removed.png" alt="MokeSell">
-            </a>
-          </div>
-          <!-- Center: Navigation Menu -->
-          <nav class="main-nav">
-            <ul>
-              <li><a href="listings.html">Browse</a></li>
-              <li><a href="upload.html">Sell</a></li>
-              <li><a href="about.html">About</a></li>
-              <li><a href="contact.html">Contact</a></li>
-            </ul>
-          </nav>
-          <!-- Right: Utility Icons -->
-          <div class="header-icons">
-            <i id="search-btn" class="fa fa-search"></i>
-            <a href="account.html"><i class="fa fa-user"></i></a>
-            <a href="cart.html"><i class="fa fa-shopping-cart"></i></a>
-          </div>
+      <div class="header-container">
+        <!-- Left: Logo -->
+        <div class="logo">
+          <a href="index.html">
+            <img src="/assets/photos/Logo-bg-removed.png" alt="MokeSell" />
+          </a>
         </div>
-      </header>
+        <!-- Center: Navigation Menu -->
+        <nav class="main-nav">
+          <ul>
+            <li><a href="listings.html">Browse</a></li>
+            <li><a href="upload.html">Sell</a></li>
+            <li><a href="about.html">About</a></li>
+            <li><a href="contact.html">Contact</a></li>
+          </ul>
+        </nav>
+        <!-- Right: Utility Icons -->
+        <div class="header-icons">
+          <i id="search-btn" class="fa fa-search"></i>
+          <a href="account.html"><i class="fa fa-user"></i></a>
+          <a href="cart.html"><i class="fa fa-shopping-cart"></i></a>
+        </div>
+      </div>
+    </header>
 
     <main>
+      <div class="profile-main width">
+      <!-- Profile Section -->
+      <aside class="profile-sidebar">
         <section id="profile-section">
-            <h2>Your Profile</h2>
-            <div id="profile-info">
-                <img id="image" src="" alt="Profile Picture">
-                <p id="username-display"></p>
-                <button id="edit-username-btn">Edit Username</button>
-            </div>
-
-            <div id="edit-username-form" style="display: none;">
-                <input type="text" id="new-username" placeholder="New Username">
-                <button id="save-username-btn">Save</button>
-                <button id="cancel-edit-btn">Cancel</button>
-                <p id="username-error" style="color: red; display: none;">Username is already taken.</p>
-            </div>
+          <h2>Your Profile</h2>
+          <div id="profile-info">
+            <img id="image" src="" alt="Profile Picture" />
+            <p id="username-display"></p>
+            <button id="edit-username-btn">Edit Username</button>
+          </div>
+          <div id="edit-username-form" style="display: none;">
+            <input type="text" id="new-username" placeholder="New Username" />
+            <button id="save-username-btn">Save</button>
+            <button id="cancel-edit-btn">Cancel</button>
+            <p id="username-error" style="color: red; display: none;">
+              Username is already taken.
+            </p>
+          </div>
         </section>
+      </aside>
+      
+      <div class="profile-main-container">
+         <!-- Listings Section -->
+        <section id="listings-section">
+          <h2>Your Listings</h2>
+          <div id="user-listings">
+            <!-- Listing cards will be inserted here by script.js -->
+          </div>
+        </section>
+
+        <!-- Reviews Section -->
+        <section id="reviews-section">
+          <h2>Reviews</h2>
+          <!-- Average Rating -->
+          <p id="average-rating"></p>
+
+          <!-- Top Reviews -->
+          <div id="top-reviews">
+            <h3>Top Reviews</h3>
+            <!-- Top reviews (up to 3) will be inserted here -->
+          </div>
+
+          <!-- All Reviews -->
+          <div id="all-reviews">
+            <h3>All Reviews</h3>
+            <!-- All reviews will be inserted here by script.js -->
+          </div>
+        </section>
+      </div>
+    </div>
     </main>
 
     <footer>
-        <p>&copy; 2025 MokeSell. All rights reserved.</p>
+      <p>&copy; 2025 MokeSell. All rights reserved.</p>
     </footer>
 
+    <!-- Firebase Scripts -->
     <script type="module" src="https://www.gstatic.com/firebasejs/9.16.0/firebase-app.js"></script>
     <script type="module" src="https://www.gstatic.com/firebasejs/9.16.0/firebase-auth.js"></script>
     <script type="module" src="https://www.gstatic.com/firebasejs/9.16.0/firebase-firestore.js"></script>
+    <!-- Your main script -->
     <script type="module" src="../js/script.js"></script>
-</body>
+  </body>
 </html>
