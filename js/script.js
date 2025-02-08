@@ -484,35 +484,84 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // Render Listings
-    function renderListings(querySnapshot) {
+    async function renderListings(querySnapshot) {
       const listingsContainer = document.querySelector(".listings-container");
       listingsContainer.innerHTML = "";
-
-      if (querySnapshot.empty) {
-        listingsContainer.innerHTML = "<p>No listings found.</p>";
-        return;
-      }
-      querySnapshot.forEach((doc) => {
-        const listing = doc.data();
-        const listingCard = document.createElement("a");
-        listingCard.classList.add("listing-card");
-        listingCard.href = `listing-details.html?id=${doc.id}`; // Pass listing ID in URL
-        
-        listingCard.innerHTML = `
-          <div class="listing-image">
-            <img src="${listing.imageUrl}" alt="${listing.title}">
-          </div>
-          <div class="listing-details">
-            <h2>${listing.title}</h2>
-            <p>${listing.description}</p>
-            <p><strong>Price:</strong> £${listing.price.toFixed(2)}</p>
-            <p><strong>Condition:</strong> ${listing.condition}</p>
-          </div>
-        `;
-
-        listingsContainer.appendChild(listingCard);
+  
+      const listingsQuery = query(collection(db, "listings"), orderBy("createdAt", "desc"));
+  
+      querySnapshot.forEach(async (docSnap) => {
+          const listing = docSnap.data();
+          const listingId = docSnap.id;
+  
+          // Fetch seller details
+          const userDoc = await getDoc(doc(db, "users", listing.userId));
+          let sellerInfo = `<p>Unknown Seller</p>`;
+          if (userDoc.exists()) {
+              const userData = userDoc.data();
+              sellerInfo = `
+                  <div class="seller-info">
+                      <img src="${userData.profilePicture}" alt="${userData.username}" class="seller-image">
+                      <span>${userData.username}</span>
+                  </div>
+              `;
+          }
+  
+          // ✅ Fix: Show price correctly for posts & wholesale
+          let priceDisplay = "";
+          if (listing.listingType === "post") {
+              priceDisplay = `Price: £${listing.price.toFixed(2)}`;
+          } else if (listing.listingType === "wholesale" && listing.pricingOptions.length > 0) {
+              const minPrice = Math.min(...listing.pricingOptions.map(opt => opt.price));
+              priceDisplay = `Starting from: £${minPrice.toFixed(2)} per unit`;
+          }
+  
+          // ✅ Fix: Show "Add to Cart" only for wholesale
+          let actionSection = "";
+          if (listing.listingType === "wholesale") {
+              let optionsHtml = listing.pricingOptions.map(option =>
+                  `<option value="${option.quantity}-${option.price}">${option.quantity} units @ £${option.price.toFixed(2)} each</option>`
+              ).join("");
+  
+              actionSection = `
+                  <label for="quantity-select-${listingId}">Select Quantity:</label>
+                  <select id="quantity-select-${listingId}">
+                      ${optionsHtml}
+                  </select>
+                  <button class="add-to-cart" data-id="${listingId}">Add to Cart</button>
+              `;
+          }
+  
+          // ✅ Fix: Remove "Make an Offer" (Only available in listing-details.html)
+          const listingElement = document.createElement("div");
+          listingElement.classList.add("listing-card");
+          listingElement.innerHTML = `
+          <div class="listing-page-container">
+              ${sellerInfo} <!-- Seller info at the top -->
+              <a href="listing-details.html?id=${listingId}">
+                  <img src="${listing.imageUrl}" alt="${listing.title}">
+              </a>
+              <h3>${listing.title}</h3>
+              <p>${priceDisplay}</p>
+              <p>Condition: ${listing.condition}</p>
+              ${actionSection} <!-- Only "Add to Cart" for wholesale -->
+              </div>
+          `;
+  
+          listingsContainer.appendChild(listingElement);
       });
-    }
+  
+      // ✅ Handle "Add to Cart" for wholesale listings
+      document.querySelectorAll(".add-to-cart").forEach(button => {
+          button.addEventListener("click", (event) => {
+              const listingId = event.target.dataset.id;
+              const select = document.getElementById(`quantity-select-${listingId}`);
+              const [quantity, price] = select.value.split("-").map(Number);
+              addToCart(listingId, quantity, price);
+          });
+      });
+  }
+    
 
     // Search Button Event Listener
     document.getElementById("search-btn").addEventListener("click", () => {
@@ -546,6 +595,28 @@ document.addEventListener("DOMContentLoaded", () => {
         console.error("Error searching listings: ", error);
       }
       });
+      async function addToCart(listingId, quantity, price) {
+        const auth = getAuth();
+        const user = auth.currentUser;
+        if (!user) {
+            alert("You must be logged in to add items to cart.");
+            return;
+        }
+    
+        try {
+            await addDoc(collection(db, "carts", user.uid, "items"), {
+                listingId,
+                quantity,
+                pricePerUnit: price,
+                totalPrice: quantity * price,
+                timestamp: serverTimestamp()
+            });
+    
+            alert(`Added ${quantity} units to cart at £${price.toFixed(2)} per unit.`);
+        } catch (error) {
+            console.error("Error adding to cart:", error);
+        }
+    }
   }
   // ========================== Upload Page ========================== //
   else if (currentPage === "upload") {
@@ -579,8 +650,21 @@ document.addEventListener("DOMContentLoaded", () => {
         const description = document.getElementById("description").value;
         const condition = document.getElementById("condition").value;
         const imageInput = document.getElementById("image");
-  
-        let imageUrl = "";
+        const listingType = document.getElementById("listing-type").value; 
+        let pricingOptions = [];
+        if (listingType === "wholesale") {
+            document.querySelectorAll(".option-entry").forEach(entry => {
+                const quantity = parseInt(entry.querySelector(".option-quantity").value);
+                const price = parseFloat(entry.querySelector(".option-price").value);
+                if (!isNaN(quantity) && !isNaN(price)) {
+                    pricingOptions.push({ quantity, price });
+                }
+            });
+        } else {
+            pricingOptions.push({ quantity: 1, price: parseFloat(document.getElementById("price").value) });
+        }
+
+      let imageUrl = "";
   
         // Check if an image file was uploaded
         if (imageInput.files.length > 0) {
@@ -606,6 +690,8 @@ document.addEventListener("DOMContentLoaded", () => {
             description,
             condition,
             imageUrl,
+            listingType,
+            pricingOptions,
             userId: currentUser.uid, // Add user ID to the listing
             createdAt: serverTimestamp(), // Use server timestamp
           });
@@ -1524,6 +1610,102 @@ document.addEventListener("DOMContentLoaded", () => {
         alert("Failed to submit review. Please try again.");
       }
     });    
+  }else if (currentPage === "cart"){
+    async function loadCart() {
+      const auth = getAuth();
+      const user = auth.currentUser;
+      if (!user) {
+          alert("You must be logged in to view your cart.");
+          window.location.href = "index.html";
+          return;
+      }
+  
+      const cartContainer = document.getElementById("cart-items");
+      const totalElement = document.getElementById("cart-total");
+      cartContainer.innerHTML = "";
+  
+      const cartQuery = collection(db, "carts", user.uid, "items");
+      const querySnapshot = await getDocs(cartQuery);
+  
+      let total = 0;
+  
+      querySnapshot.forEach(async (docSnap) => {
+          const cartItem = docSnap.data();
+          const cartItemId = docSnap.id;
+  
+          // Fetch listing details
+          const listingDoc = await getDoc(doc(db, "listings", cartItem.listingId));
+          if (!listingDoc.exists()) return;
+          const listing = listingDoc.data();
+  
+          // Fetch seller details
+          const userDoc = await getDoc(doc(db, "users", listing.userId));
+          let sellerInfo = `<p>Unknown Seller</p>`;
+          if (userDoc.exists()) {
+              const userData = userDoc.data();
+              sellerInfo = `
+                  <div class="seller-info">
+                      <img src="${userData.profilePicture}" alt="${userData.username}" class="seller-image">
+                      <span>${userData.username}</span>
+                  </div>
+              `;
+          }
+  
+          // Calculate total price
+          const itemTotal = cartItem.quantity * cartItem.pricePerUnit;
+          total += itemTotal;
+  
+          // Create cart item element
+          const cartItemElement = document.createElement("div");
+          cartItemElement.classList.add("cart-item");
+          cartItemElement.innerHTML = `
+              ${sellerInfo}
+              <a href="listing-details.html?id=${cartItem.listingId}">
+                  <img src="${listing.imageUrl}" alt="${listing.title}">
+              </a>
+              <h3>${listing.title}</h3>
+              <p>Price per unit: £${cartItem.pricePerUnit.toFixed(2)}</p>
+              <label for="quantity-${cartItemId}">Quantity:</label>
+              <input type="number" id="quantity-${cartItemId}" value="${cartItem.quantity}" min="1">
+              <p>Total: £<span id="total-${cartItemId}">${itemTotal.toFixed(2)}</span></p>
+              <button class="remove-from-cart" data-id="${cartItemId}">Remove</button>
+          `;
+  
+          cartContainer.appendChild(cartItemElement);
+  
+          // Update total price when quantity changes
+          document.getElementById(`quantity-${cartItemId}`).addEventListener("input", async (event) => {
+              const newQuantity = parseInt(event.target.value);
+              if (newQuantity < 1) return;
+              
+              const newTotal = newQuantity * cartItem.pricePerUnit;
+              document.getElementById(`total-${cartItemId}`).textContent = newTotal.toFixed(2);
+  
+              total = total - itemTotal + newTotal;
+              totalElement.textContent = total.toFixed(2);
+  
+              // Update Firestore
+              await updateDoc(doc(db, "carts", user.uid, "items", cartItemId), {
+                  quantity: newQuantity,
+                  totalPrice: newTotal
+              });
+          });
+  
+          // Remove item from cart
+          document.querySelector(`.remove-from-cart[data-id="${cartItemId}"]`).addEventListener("click", async () => {
+              await deleteDoc(doc(db, "carts", user.uid, "items", cartItemId));
+              loadCart(); // Refresh cart
+          });
+      });
+  
+      totalElement.textContent = total.toFixed(2);
+  }
+  
+  // Load cart when on cart page
+  if (document.getElementById("cart-page")) {
+      loadCart();
+  }
+  
   }
 
   async function sendOffer(chatId, offerAmount) {

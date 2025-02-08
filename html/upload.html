@@ -5,95 +5,150 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MokeSell - Upload Item</title>
     <link rel="stylesheet" href="../css/styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@200;300;400;500;600;700&family=Montserrat:wght@100..900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
 </head>
 <body id="upload">
-    <header class="inner-header">
-        <div class="header-container">
-          <!-- Left: Logo -->
-          <div class="logo">
-            <a href="index.html">
-              <img src="/assets/photos/Logo-bg-removed.png" alt="MokeSell" />
-            </a>
+  <header class="inner-header">
+    <div class="header-container">
+      <!-- Left: Logo -->
+      <div class="logo">
+        <a href="index.html">
+          <img src="/assets/photos/Logo-bg-removed.png" alt="MokeSell" />
+        </a>
+      </div>
+      <!-- Center: Navigation Menu -->
+      <nav class="main-nav">
+        <ul>
+          <li><a href="listings.html">Browse</a></li>
+          <li><a href="upload.html">Sell</a></li>
+          <li><a href="about.html">About</a></li>
+          <li><a href="contact.html">Contact</a></li>
+        </ul>
+      </nav>
+      <!-- Right: Utility Icons -->
+      <div class="header-icons">
+        <i id="search-btn" class="fa fa-search"></i>
+        <div class="dropdown">
+          <button class="dropbtn"><i class="fa fa-user"></i></button>
+          <div class="dropdown-content">
+            <a href="profile.html">Profile</a>
+            <a href="settings.html">Settings</a>
+            <a href="#" id="logout-btn">Log Out</a>
           </div>
-          <!-- Center: Navigation Menu -->
-          <nav class="main-nav">
-            <ul>
-              <li><a href="listings.html">Browse</a></li>
-              <li><a href="upload.html">Sell</a></li>
-              <li><a href="about.html">About</a></li>
-              <li><a href="contact.html">Contact</a></li>
-            </ul>
-          </nav>
-          <!-- Right: Utility Icons -->
-          <div class="header-icons">
-            <i id="search-btn" class="fa fa-search"></i>
-            <div class="dropdown">
-              <button class="dropbtn">
-                <i class="fa fa-user"></i>
-              </button>
-              <div class="dropdown-content">
-                <a href="profile.html">Profile</a>
-                <a href="settings.html">Settings</a>
-                <a href="#" id="logout-btn">Log Out</a>
-              </div>
-            </div>            
-          <a href="cart.html"><i class="fa fa-shopping-cart"></i></a>
-          </div>
-        </div>
-      </header>
+        </div>            
+        <a href="cart.html"><i class="fa fa-shopping-cart"></i></a>
+      </div>
+    </div>
+  </header>
 
-    <main>
-        <section id="upload">
-            <h2>Upload Your Item</h2>
-            <form id="upload-form">
-                <label for="title">Item Title:</label>
-                <input type="text" id="title" required>
+  <main>
+    <section id="upload">
+        <h2>Upload Your Item</h2>
+        <form id="upload-form">
+            <!-- Item Title -->
+            <label for="title">Item Title:</label>
+            <input type="text" id="title" required>
 
-                <label for="image">Upload Image:</label>
-                <input type="file" id="image" accept="image/*" onchange="previewImage(event)">
+            <!-- Image Upload -->
+            <label for="image">Upload Image (Max 10 MB):</label>
+            <input type="file" id="image" accept="image/*" onchange="previewImage(event)">
+            <img id="image-preview" src="" alt="Image Preview" style="display: none; width: 100px; height: auto; margin-bottom: 10px;">
 
-                <img id="image-preview" src="" alt="Image Preview" style="display: none; width: 100px; height: auto; margin-bottom: 10px;">
+            <!-- Listing Type Selection -->
+            <label for="listing-type">Listing Type:</label>
+            <select id="listing-type">
+                <option value="post">Post (Offers Only)</option>
+                <option value="wholesale">Wholesale (Add to Cart Available)</option>
+            </select>
 
-                <label for="category">Category:</label>
-                <select id="category" required>
-                    <option value="electronics">Electronics</option>
-                    <option value="furniture">Furniture</option>
-                    <option value="clothing">Clothing</option>
-                    <option value="toys">Toys</option>
-                    <option value="books">Books</option>
-                    <option value="other">Other</option>
-                </select>
+            <!-- Wholesale Pricing Options (Hidden by Default) -->
+            <div id="wholesale-options" style="display: none;">
+                <h4>Wholesale Pricing (Price per Unit)</h4>
+                <div id="quantity-options"></div>
+                <button type="button" id="add-option">+ Add Pricing Option</button>
+            </div>
 
-                <label for="price">Price:</label>
-                <input type="number" id="price" required>
+            <!-- Price (Hidden for Wholesale Listings) -->
+            <label for="price" id="price-label">Price:</label>
+            <input type="number" id="price" required>
 
-                <label for="description">Description:</label>
-                <textarea id="description" required></textarea>
+            <!-- Category Selection -->
+            <label for="category">Category:</label>
+            <select id="category" required>
+                <option value="electronics">Electronics</option>
+                <option value="furniture">Furniture</option>
+                <option value="clothing">Clothing</option>
+                <option value="toys">Toys</option>
+                <option value="books">Books</option>
+                <option value="other">Other</option>
+            </select>
 
-                <label for="condition">Condition:</label>
-                <select id="condition" required>
-                    <option value="new">New</option>
-                    <option value="used">Used</option>
-                </select>
+            <!-- Description -->
+            <label for="description">Description:</label>
+            <textarea id="description" required></textarea>
 
-                <button type="submit">Upload Item</button>
-            </form>
-        </section>
-    </main>
+            <!-- Condition Selection -->
+            <label for="condition">Condition:</label>
+            <select id="condition" required>
+                <option value="new">New</option>
+                <option value="used">Used</option>
+            </select>
 
-    <footer>
-        <p>&copy; 2025 MokeSell. All rights reserved.</p>
-    </footer>
-    <script type="module" src="https://www.gstatic.com/firebasejs/9.16.0/firebase-app.js"></script>
-    <script type="module" src="https://www.gstatic.com/firebasejs/9.16.0/firebase-auth.js"></script>
-    <script type="module" src="../js/script.js"></script>
-    <script> 
-        // Function to preview the uploaded image
-            function previewImage(event) {
-             const imagePreview = document.getElementById('image-preview');
-             imagePreview.src = URL.createObjectURL(event.target.files[0]);
-             imagePreview.style.display = 'block';
-           }
-    </script>
-</body>
-</html>
+            <button type="submit">Upload Item</button>
+        </form>
+    </section>
+  </main>
+
+  <footer>
+    <p>&copy; 2025 MokeSell. All rights reserved.</p>
+  </footer>
+
+  <script type="module" src="https://www.gstatic.com/firebasejs/9.16.0/firebase-app.js"></script>
+  <script type="module" src="https://www.gstatic.com/firebasejs/9.16.0/firebase-auth.js"></script>
+  <script type="module" src="../js/script.js"></script>
+
+  <script> 
+    // Function to preview the uploaded image
+    function previewImage(event) {
+        const imagePreview = document.getElementById('image-preview');
+        imagePreview.src = URL.createObjectURL(event.target.files[0]);
+        imagePreview.style.display = 'block';
+    }
+    document.getElementById("listing-type").addEventListener("change", function () {
+      const wholesaleOptions = document.getElementById("wholesale-options");
+      const priceField = document.getElementById("price");
+      const priceLabel = document.getElementById("price-label");
+
+      if (this.value === "wholesale") {
+          wholesaleOptions.style.display = "block";
+          priceField.removeAttribute("required");
+          priceField.style.display = "none";
+          priceLabel.style.display = "none";
+      } else {
+          wholesaleOptions.style.display = "none";
+          priceField.setAttribute("required", "true");
+          priceField.style.display = "block";
+          priceLabel.style.display = "block";
+      }
+    });
+    document.getElementById("add-option").addEventListener("click", function () { 
+      const container = document.getElementById("quantity-options");
+      const div = document.createElement("div");
+      div.classList.add("option-entry");
+      div.innerHTML = `
+          <input type="number" class="option-quantity" placeholder="Min Quantity" min="1">
+          <input type="number" class="option-price" placeholder="Price per Unit (£)" step="0.01" min="0">
+          <button type="button" class="remove-option">❌</button>
+        `;
+      container.appendChild(div);
+
+      div.querySelector(".remove-option").addEventListener("click", () => {
+          container.removeChild(div);
+      });
+    });
+  </script>
+  </html>

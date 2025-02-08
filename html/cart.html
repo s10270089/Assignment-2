@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MokeSell - Cart</title>
+    <link rel="stylesheet" href="../css/styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+</head>
+<body id="cart" class="inner">
+    <header class="inner-header">
+        <div class="header-container">
+            <div class="logo">
+                <a href="index.html">
+                    <img src="/assets/photos/Logo-bg-removed.png" alt="MokeSell">
+                </a>
+            </div>
+            <nav class="main-nav">
+                <ul>
+                    <li><a href="listings.html">Browse</a></li>
+                    <li><a href="upload.html">Sell</a></li>
+                    <li><a href="about.html">About</a></li>
+                    <li><a href="contact.html">Contact</a></li>
+                </ul>
+            </nav>
+            <div class="header-icons">
+                <i id="search-btn" class="fa fa-search"></i>
+                <div class="dropdown">
+                    <button class="dropbtn"><i class="fa fa-user"></i></button>
+                    <div class="dropdown-content">
+                        <a href="profile.html">Profile</a>
+                        <a href="settings.html">Settings</a>
+                        <a href="#" id="logout-btn">Log Out</a>
+                    </div>
+                </div>
+                <a href="cart.html"><i class="fa fa-shopping-cart"></i></a>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <h2>Your Cart</h2>
+        <div class="cart-container">
+            <div id="cart-items"></div>
+            <div class="cart-summary">
+                <h3>Total: £<span id="cart-total">0.00</span></h3>
+                <button id="checkout-btn">Proceed to Checkout</button>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <p>&copy; 2025 MokeSell. All rights reserved.</p>
+    </footer>
+
+    <script type="module" src="https://www.gstatic.com/firebasejs/9.16.0/firebase-app.js"></script>
+    <script type="module" src="https://www.gstatic.com/firebasejs/9.16.0/firebase-auth.js"></script>
+    <script type="module" src="../js/script.js"></script>
+</body>
+</html>
