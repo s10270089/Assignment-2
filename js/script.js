@@ -1014,6 +1014,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Function to load chat messages
     async function loadChatMessages(chatId) {
+      if (activeChatId !== chatId) return;
       const messagesRef = collection(db, "chats", chatId, "messages");
       const q = query(messagesRef, orderBy("timestamp", "asc"));
 
@@ -1097,66 +1098,65 @@ document.addEventListener("DOMContentLoaded", () => {
     const submitOfferButton = document.getElementById("submit-offer");
     const modalcontent = document.getElementById("modal-content");
     const offerMessageId = document.getElementById("review-modal").dataset.offerMessageId;
+    let activeChatId = null; 
+
 
     onAuthStateChanged(auth, async (user) => {
       if (!user) {
         window.location.href = "login.html";
         return;
       }
-  
-      // Fetch and display chat list
-      const chatsRef = collection(db, "chats");
-      const q = query(chatsRef, where("participantsIds", "array-contains", user.uid), orderBy("timestamp", "desc"));
-  
+
+      // Query chats for the current user, ordered by last activity (timestamp)
+      const q = query(
+        collection(db, "chats"),
+        where("participantsIds", "array-contains", user.uid),
+        orderBy("timestamp", "desc")
+      );
+
       onSnapshot(q, async (snapshot) => {
-        if (snapshot.empty) {
-          // No chats found
-          chatList.innerHTML = '<p class="no-chats-message">You have no chats here.</p>';
-          activeChatContainer.innerHTML = '<p class="no-active-chat">Select a chat to start messaging.</p>';
-          return;
-        }
-  
-        // Clear existing chat list
-        chatList.innerHTML = '';
-  
-        // Populate chat list
+        const chatList = document.querySelector('.chat-list');
+        chatList.innerHTML = "";
+        
         snapshot.forEach(async (documents) => {
           const chat = documents.data();
+          // Use the correct document ID:
+          const chatId = documents.id;
+          // Retrieve the "other user" (the one you're chatting with)
           const otherUserId = chat.participantsIds.find(id => id !== user.uid);
-  
-          // Fetch other user's details
           const userDoc = await getDoc(doc(db, "users", otherUserId));
-
-          // Check if user exists
           if (!userDoc.exists()) return;
           const userData = userDoc.data();
-  
-          // Create chat item
+          
+          // Build an unread badge if there are unread messages.
+          const unreadBadge = chat.unreadCount && chat.unreadCount > 0
+            ? `<span class="unread-badge">${chat.unreadCount}</span>`
+            : '';
+            
+          // Create the chat item. Make sure to display the lastMessage.
           const chatItem = document.createElement('div');
           chatItem.className = 'chat-item';
-          chatItem.dataset.chatId = doc.id;
+          chatItem.dataset.chatId = chatId;
           chatItem.innerHTML = `
             <img src="${userData.profilePicture}" alt="${userData.username}">
-            <div>
+            <div class="chat-info">
               <h3>${userData.username}</h3>
-              <p>${chat.listingTitle}</p>
+              <p>${chat.listingTitle || "No listing title"}</p>
               <p class="last-message">${chat.lastMessage || 'No messages yet'}</p>
+              ${unreadBadge}
             </div>
           `;
-  
-          // Add click event to load active chat
+          // Add click event to load active chat:
           chatItem.addEventListener('click', () => {
-            loadActiveChat(doc.id, chat.listingId);
+            loadActiveChat(chatId, chat.listingId);
           });
-  
           chatList.appendChild(chatItem);
         });
-  
-        // Load the first chat by default (if available)
-        if (snapshot.docs.length > 0) {
+        
+        if (!activeChatId && snapshot.docs.length > 0) {
           const firstChat = snapshot.docs[0];
           loadActiveChat(firstChat.id, firstChat.data().listingId);
-        }
+      }
       });
     });
   
@@ -1169,6 +1169,12 @@ document.addEventListener("DOMContentLoaded", () => {
           console.error("Invalid chatId or listingId");
           return;
         }
+        if (activeChatId === chatId) return; 
+        activeChatId = chatId;
+        await updateDoc(doc(db, "chats", chatId), {
+          unreadCount: 0
+        });
+
 
         if (!listingDoc.exists()) {
           throw new Error("Listing not found");
@@ -1415,6 +1421,11 @@ document.addEventListener("DOMContentLoaded", () => {
           text,
           senderId,
           timestamp: serverTimestamp(),
+        });
+        await updateDoc(doc(db, "chats", chatId), {
+          lastMessage: text,
+          timestamp: serverTimestamp(),
+          unreadCount: 1
         });
       } catch (error) {
         console.error("Error sending message:", error);

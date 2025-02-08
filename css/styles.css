@@ -648,15 +648,19 @@ select {
     padding-right: 20px;
     padding-bottom: 20px;
   }
-  /* Chat List Page */
-  /* Chat Layout */
-.chat-layout {
-  display: flex;
-  height: calc(100vh - 100px); /* Adjust based on header height */
+
+/* Chat Layout */
+.unread-badge {
+  background: red;
+  color: white;
+  border-radius: 50%;
+  padding: 2px 6px;
+  font-size: 0.8rem;
+  position: absolute;
+  top: 5px;
+  right: 5px;
 }
 
-/* Chat List Sidebar */
-/* Chat Layout */
 .chat-layout {
   display: flex;
   height: calc(100vh - 100px); /* Adjust based on header height */
