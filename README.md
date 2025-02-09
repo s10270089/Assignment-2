@@ -5,79 +5,88 @@
 
 ## Key Features
 **1. User Account Management**
- - Account creation and login for buyers and sellers.
- - Profile updates and account settings.
- - “Follow” functionality to keep updated on specific users' new listings.
+  - Secure account creation and login for buyers and sellers using Firebase Authentication.
+  - Profile management with updates to personal details and account settings.
 
 **2. Listing Management**
  - Create, edit, and upload detailed listings, complete with photos, price, and condition.
- - Maximum of 30 active listings per seller, with automatic deactivation after 30 days.
- - Paid “bump” options to promote listings and enhance visibility.
 
-**3. Search and Browsing**
- - Advanced search functionality using keywords.
- - Category and sub-category browsing.
- - Save listings for later via the “Like” feature.
 
-**5. Communication and Transactions**
- - Integrated chat for buyers and sellers to discuss transaction details.
- - Offer submission and acceptance for transactions.
- - Transaction-based review and rating system to build marketplace trust.
+**3. Communication and Transactions**
+- **Real-Time Chat:** Integrated messaging powered by Firebase Firestore enables buyers and sellers to discuss transaction details instantly.
+- **Offer System:** Users can submit and accept offers directly within the chat interface.
+- **Review & Rating:** Transaction-based review system helps build trust and accountability in the marketplace.
 
-**6. Feedback and Support**
- - Feedback submission for platform issues, with resolution handled by support staff.
- - Support staff rating system for quality assurance.
+**4. Additional Features**
+- **Notifications:** Real-time alerts for new listings, offers, and messages.
+- **Transaction History:** Detailed logs to track completed trades and reviews.
+- **Future Enhancements:** Planned loyalty rewards, gamification features, and advanced analytics for sellers.
 
-**7. Additional Features**
- - Notifications for new listings, offers, and messages.
- - Transaction history to track completed trades and reviews.
- - Gamification and loyalty rewards to enhance engagement (future feature).
+## Technical Overview & Architecture
+MokeSell is built as a modern, modular web application with clear separation of concerns across its different pages. The codebase leverages:
+- **JavaScript (ES6 Modules):** Modular architecture with page-specific logic determined by the document’s body ID.
+- **Firebase:**  
+  - **Authentication:** Manages user sign-up, login, and logout processes.  
+  - **Firestore:** Serves as the NoSQL database for storing user profiles, listings, chats, carts, and reviews.
+- **Cloudinary:** Handles image uploads for user profiles and listings, ensuring optimized delivery.
+- **Real-Time Updates:** Uses Firestore’s onSnapshot listeners to enable instant messaging and dynamic data updates across the marketplace.
+
+Each page (Login, Signup, Listings, Upload, Profile, Listing Details, Chat, and Checkout) has dedicated functionality. For example, the chat module supports not only text messaging but also integrated offer submission and review processes for seamless transactions.
+
 
  ## Design Process
  The design prioritised accessibility, ease of use, and user engagement. MokeSell's interface is tailored for all types of users, from casual buyers to regular sellers, and includes intuitive navigation and functionality to streamline their experience.
 
 **User Stories**
-  As a **seller**, I want to create attractive listings with photos and descriptions, so buyers can easily understand my offering.
-  As a **buyer**, I want to browse items by category or keyword to quickly find what I need.
-  As a **user**, I want to follow others and save listings to stay updated and organised.
+The design process focused on accessibility, simplicity, and engagement:
+- **User-Centric Design:** Wireframes and prototypes were created in Figma to ensure intuitive navigation and a responsive interface for desktop and mobile users.
+- **User Stories:**
+  - As a **seller**, I want to create attractive listings with photos and descriptions so that buyers understand my offerings.
+  - As a **buyer**, I want to quickly find items by searching or browsing through categories.
+  - As a **user**, I want to follow other users and save listings to stay organized and updated.
 
 **Wireframes & Mockups**
 Wireframes and prototypes were created using Figma to visualise layouts and workflows for desktop and mobile versions. These designs emphasised clarity and smooth navigation. View Wireframes.
 
 ## Features
 **Existing Features**
-1. Responsive Design – Ensures usability across devices (desktop, tablet, mobile).
-2. Interactive Chat – Buyers and sellers can communicate efficiently within the platform.
-3. Listing Expiry & Bump – Automatically expires inactive listings while allowing sellers to boost visibility using paid bumps.
-4. Category Browsing – Intuitive search and filter options for easy exploration.
+1. **Interactive Chat:** Real-time messaging and offer management facilitate efficient negotiations.
+2. **Listing Management:** Create, edit, and upload listings with detailed information.
+3. **User Account Management:** Secure sign-up, login, and profile update functionality.
 
 **Features to Implement**
-1. Payment Integration – Facilitate secure online payments.
-2. Loyalty Rewards & Gamification – Enhance user engagement with rewards for participation.
-3. Advanced Analytics for Sellers – Provide insights into listing performance.
+1. **Payment Integration:** Secure online payment processing.
+2. **Loyalty Rewards & Gamification:** Incentives and rewards to boost user engagement.
+3. **Advanced Analytics for Sellers:** Detailed insights into listing performance and customer engagement.
+4. **Enhanced Search Functionality:** Further development of the keyword-based search feature.
 
 ## Technologies Used
-**HTML5**: Structured the core framework for all web pages.
-**CSS3**: Styled the interface with responsive design principles.
-**JavaScript**: Added interactivity and dynamic features like chat and filtering.
-**Lottie**: Implemented animations to enhance engagement.
-**Git & GitHub**: Managed source code and version control during development.
-**Figma**: Designed wireframes and mockups.
+- **HTML5:** Provides the structural framework for the web pages.
+- **CSS3:** Implements responsive and visually appealing designs.
+- **JavaScript (ES6):** Powers dynamic interactions, real-time features, and modular page-specific logic.
+- **Firebase:** 
+  - Authentication for secure user management.
+  - Firestore for real-time data storage and retrieval.
+- **Cloudinary:** Manages image uploads and processing.
+- **Lottie:** Adds engaging animations.
+- **Git & GitHub:** Source code management and version control.
+- **Figma:** Wireframing, mockups, and design prototyping.
 
 ## Testing
 **Manual Testing Scenarios**
-nil
+- Authentication flows (signup, login, logout)
+- Listing creation, editing, and deletion
+- Real-time chat functionality including offer submissions and acceptance
+- Responsive design testing across multiple devices and browsers
+
+**Test Case**
 
 ## Cross-Browser Compatibility
 The application was tested on the following browsers:
 Google Chrome
-(soon)
-Mozilla Firefox
-Microsoft Edge
-Safari
 
 ## Bugs or Issues
-No critical issues found during initial testing.
+No critical issues were found during initial testing
 
 **Deployment**
 The application is deployed on GitHub Pages for easy access. Continuous integration practices ensured smooth deployment and updates.
@@ -86,6 +95,7 @@ The application is deployed on GitHub Pages for easy access. Continuous integrat
 **Content**
 Item descriptions and listing examples were drafted for demonstration purposes.
 **Media**
-Item images sourced from Unsplash under the Creative Commons licence.
+- Figma (design assets)  
+- Cloudinary (image hosting)  
 **Acknowledgements**
 Inspired by leading online marketplaces and feedback from early user testing
