@@ -1762,15 +1762,17 @@ select {
   margin: 0;
   padding: 0;
 }
-
-#checkout header {
+#checkout .header-container {
   display: flex;
   justify-content: space-between;
-  padding: 20px;
-  background: #fff;
+  background: transparent;
   border-bottom: 1px solid #ddd;
+  width: 100%;
+  border: none;
 }
-
+#checkout .inner-header{
+  width: 100%;
+}
 .checkout-container {
   display: flex;
   justify-content: space-between;
@@ -1778,6 +1780,7 @@ select {
   margin: 20px auto;
   background: #fff;
   padding: 20px;
+  margin-top: 150px;
   border-radius: 8px;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 }
