@@ -485,15 +485,17 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Render Listings
     async function renderListings(querySnapshot) {
-      const listingsContainer = document.querySelector(".listings-container");
-      listingsContainer.innerHTML = "";
-  
+      const recentListingsContainer = document.getElementById("recent-listings");
+      const wholesaleListingsContainer = document.getElementById("wholesale-listings");
+
+      recentListingsContainer.innerHTML = "";
+      wholesaleListingsContainer.innerHTML = "";
+
       const listingsQuery = query(collection(db, "listings"), orderBy("createdAt", "desc"));
-  
       querySnapshot.forEach(async (docSnap) => {
           const listing = docSnap.data();
           const listingId = docSnap.id;
-  
+
           // Fetch seller details
           const userDoc = await getDoc(doc(db, "users", listing.userId));
           let sellerInfo = `<p>Unknown Seller</p>`;
@@ -506,8 +508,8 @@ document.addEventListener("DOMContentLoaded", () => {
                   </div>
               `;
           }
-  
-          // ✅ Fix: Show price correctly for posts & wholesale
+
+          // Show correct price
           let priceDisplay = "";
           if (listing.listingType === "post") {
               priceDisplay = `Price: £${listing.price.toFixed(2)}`;
@@ -515,14 +517,14 @@ document.addEventListener("DOMContentLoaded", () => {
               const minPrice = Math.min(...listing.pricingOptions.map(opt => opt.price));
               priceDisplay = `Starting from: £${minPrice.toFixed(2)} per unit`;
           }
-  
-          // ✅ Fix: Show "Add to Cart" only for wholesale
+
+          // Add to Cart button only for wholesale
           let actionSection = "";
           if (listing.listingType === "wholesale") {
               let optionsHtml = listing.pricingOptions.map(option =>
                   `<option value="${option.quantity}-${option.price}">${option.quantity} units @ £${option.price.toFixed(2)} each</option>`
               ).join("");
-  
+
               actionSection = `
                   <label for="quantity-select-${listingId}">Select Quantity:</label>
                   <select id="quantity-select-${listingId}">
@@ -531,8 +533,8 @@ document.addEventListener("DOMContentLoaded", () => {
                   <button class="add-to-cart" data-id="${listingId}">Add to Cart</button>
               `;
           }
-  
-          // ✅ Fix: Remove "Make an Offer" (Only available in listing-details.html)
+
+          // Create listing card
           const listingElement = document.createElement("div");
           listingElement.classList.add("listing-card");
           listingElement.innerHTML = `
@@ -544,13 +546,16 @@ document.addEventListener("DOMContentLoaded", () => {
               <h3>${listing.title}</h3>
               <p>${priceDisplay}</p>
               <p>Condition: ${listing.condition}</p>
-              ${actionSection} <!-- Only "Add to Cart" for wholesale -->
-              </div>
+              ${actionSection} <!-- Add to Cart only for wholesale -->
+          </div>
           `;
-  
-          listingsContainer.appendChild(listingElement);
+        if (listing.listingType === "wholesale") {
+          wholesaleListingsContainer.appendChild(listingElement);
+        }
+      
+      recentListingsContainer.appendChild(listingElement.cloneNode(true));
       });
-  
+
       // ✅ Handle "Add to Cart" for wholesale listings
       document.querySelectorAll(".add-to-cart").forEach(button => {
           button.addEventListener("click", (event) => {
@@ -561,7 +566,6 @@ document.addEventListener("DOMContentLoaded", () => {
           });
       });
   }
-    
 
     // Search Button Event Listener
     document.getElementById("search-btn").addEventListener("click", () => {
