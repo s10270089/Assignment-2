@@ -578,7 +578,7 @@ nav ul li a {
   background: white;
 }
 
-#image-preview {
+#signup #image-preview {
   margin-top: 15px;
   border-radius: 50%;
   border: 2px solid #ccc;
@@ -787,15 +787,19 @@ background-color: #218838;
 #upload{
   padding-top: 50px;
 }
+
 #upload-form {
-  max-width: 600px;            /* Adjust as needed */
-  margin: 40px auto;           /* Center on the page with some vertical space */
-  padding: 30px;               /* Internal spacing */
-  background: #f9f9f9;         /* A light background to set it off */
-  border-radius: 10px;         /* Rounded corners */
-  box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);  /* Subtle shadow for depth */
+  width: 80%;
+  margin: 40px auto;
+  padding: 30px;
+  background: #f9f9f9;
+  border-radius: 10px;
+  box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
 }
 
+#upload form{
+  max-width: 100%;
+}
 /* Form heading */
 #upload-form h2 {
   text-align: center;
@@ -835,14 +839,42 @@ background-color: #218838;
   resize: vertical;  /* Allow vertical resizing if needed */
 }
 
+.image-upload{
+  width: 100%;
+  display: flex;
+}
+
 #drop-area {
+  display: flex;
   border: 2px dashed #ccc;
   border-radius: 10px;
   padding: 30px;
   text-align: center;
   cursor: pointer;
   margin-bottom: 20px;
+  width: 50%;
+  height: 600px;
   transition: background-color 0.3s ease, border-color 0.3s ease;
+  align-content: center;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+#upload #image-preview{
+  position: relative;
+  object-fit: cover;
+  width: 50%;
+  height: 600px;
+  border: 2px solid #ccc;
+  border-radius: 10px;
+  padding: 30px;
+  text-align: center;
+  cursor: pointer;
+  margin-bottom: 20px;
+}
+.image-upload img{
+  position: absolute;
 }
 
 #drop-area.highlight {
@@ -855,7 +887,12 @@ background-color: #218838;
   font-size: 16px;
   color: #555;
 }
-
+.listing-details{
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  gap: 10px;
+}
 
 /* Button styling */
 #upload-form button[type="submit"],

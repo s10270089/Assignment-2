@@ -50,18 +50,28 @@
 
   <main>
     <section id="upload">
-        <h2>Upload Your Item</h2>
         <form id="upload-form">
+            
+
+            <!-- Image Upload -->
+            <div class="image-upload">
+              <div id="drop-area">
+                <label for="image">Upload Image (Max 10 MB):</label>
+                <input type="file" id="image" accept="image/*" onchange="previewImage(event)">
+              </div>
+              <img id="image-preview" src="" alt="Image Preview" style="display: none;">
+            </div>
+
+            <div class="listing-details">
+            <h3>Listing Details</h3>
             <!-- Item Title -->
             <label for="title">Item Title:</label>
             <input type="text" id="title" required>
 
-            <!-- Image Upload -->
-            <div id="drop-area">
-            <label for="image">Upload Image (Max 10 MB):</label>
-            <input type="file" id="image" accept="image/*" onchange="previewImage(event)">
-            </div>
-            <img id="image-preview" src="" alt="Image Preview" style="display: none;">
+            <!-- Description -->
+            <label for="description">Description:</label>
+            <textarea id="description" required></textarea>
+
 
             <!-- Listing Type Selection -->
             <label for="listing-type">Listing Type:</label>
@@ -92,10 +102,7 @@
                 <option value="other">Other</option>
             </select>
 
-            <!-- Description -->
-            <label for="description">Description:</label>
-            <textarea id="description" required></textarea>
-
+            
             <!-- Condition Selection -->
             <label for="condition">Condition:</label>
             <select id="condition" required>
@@ -104,6 +111,7 @@
             </select>
 
             <button type="submit">Upload Item</button>
+          </div>
         </form>
     </section>
   </main>
