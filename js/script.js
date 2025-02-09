@@ -533,7 +533,7 @@ document.addEventListener("DOMContentLoaded", () => {
         let actionSection = "";
         if (listing.listingType === "wholesale") {
           let optionsHtml = listing.pricingOptions.map(option =>
-            `<option value="${option.quantity}-${option.price}">${option.quantity} units @ £${option.price.toFixed(2)} each</option>`
+            `<option value="${option.quantity}-${option.price}">${option.quantity} units @ $${option.price.toFixed(2)} each</option>`
           ).join("");
     
           actionSection = `
@@ -610,7 +610,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 <img src="${listing.imageURL}" alt="${listing.title}">
                 <h2>${listing.title}</h2>
                 <p>${listing.description}</p>
-                <p>Price: £${listing.price}</p>
+                <p>Price: $${listing.price}</p>
               </div>
             `;
             listingsContainer.innerHTML += listingCard;
@@ -637,7 +637,7 @@ document.addEventListener("DOMContentLoaded", () => {
             totalPrice: quantity * price,
             timestamp: serverTimestamp()
           });
-          alert(`Added ${quantity} units to cart at £${price.toFixed(2)} per unit.`);
+          alert(`Added ${quantity} units to cart at $${price.toFixed(2)} per unit.`);
         } catch (error) {
           console.error("Error adding to cart:", error);
           alert("Failed to add item to cart. Please try again.");
@@ -825,7 +825,7 @@ document.addEventListener("DOMContentLoaded", () => {
           listingCard.innerHTML = `
             <img src="${listing.imageUrl}" alt="${listing.title}"">
             <h4>${listing.title}</h4>
-            <p>£${listing.price.toFixed(2)}</p>
+            <p>$${listing.price.toFixed(2)}</p>
           `;
           listingsContainer.appendChild(listingCard);
         });
@@ -1003,7 +1003,7 @@ document.addEventListener("DOMContentLoaded", () => {
             // Populate listing data
             mainImage.src = listingData.imageUrl;
             titleElement.textContent = listingData.title;
-            priceElement.textContent = `£${listingData.price.toFixed(2)}`;
+            priceElement.textContent = `$${listingData.price.toFixed(2)}`;
             conditionElement.textContent = `Condition: ${listingData.condition}`;
             dateElement.textContent = `Listed: ${new Date(listingData.createdAt?.toDate()).toLocaleDateString()}`;
             descriptionElement.textContent = listingData.description;
@@ -1099,56 +1099,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Add this after loading listing details
     const currentUser = auth.currentUser;
-    
-    // // Determine if user is seller
-    // const isSeller = currentUser && currentUser.uid === listingData.userId;
-    
-    // // Show appropriate buttons
-    // if (isSeller) {
-    //   document.getElementById('edit-listing').classList.remove('hidden');
-    //   document.getElementById('start-chat').classList.add('hidden');
-    // }
-
-    // // Chat modal handling
-    // const chatModal = document.getElementById('chat-modal');
-    // const chatMessages = document.querySelector('.chat-messages');
-    // const messageInput = document.getElementById('message-input');
-
-    // document.getElementById('start-chat').addEventListener('click', async () => {
-    //   if (!currentUser) {
-    //     alert('Please login to start chatting');
-    //     window.location.href = 'login.html';
-    //     return;
-    //   }
-      
-    //   chatModal.classList.remove('hidden');
-    //   loadChatMessages();
-    // });
-
-    // // Function to load chat messages
-    // async function loadChatMessages(chatId) {
-    //   if (activeChatId !== chatId) return;
-    //   const messagesRef = collection(db, "chats", chatId, "messages");
-    //   const q = query(messagesRef, orderBy("timestamp", "asc"));
-
-    //   onSnapshot(q, (snapshot) => {
-    //     const chatMessages = document.querySelector('.chat-messages');
-    //     chatMessages.innerHTML = '';
-    //     snapshot.forEach((doc) => {
-    //       const message = doc.data();
-    //       const messageDiv = document.createElement('div');
-    //       messageDiv.className = `message ${message.senderId === user.uid ? 'sent' : 'received'}`;
-    //       messageDiv.innerHTML = `
-    //         <div class="message-content">${message.text}</div>
-    //         <div class="message-time">${new Date(message.timestamp?.toDate()).toLocaleTimeString()}</div>
-    //       `;
-    //       chatMessages.appendChild(messageDiv);
-    //     });
-
-    //     // Scroll to the bottom of the chat
-    //     chatMessages.scrollTop = chatMessages.scrollHeight;
-    //   });
-    // }
 
     async function getOrCreateChat() {
       const chatsRef = collection(db, 'chats');
@@ -1324,7 +1274,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     
         if (listingPriceElement) {
-          listingPriceElement.textContent = `Price: £${listingData.price.toFixed(2)}`;
+          listingPriceElement.textContent = `Price: $${listingData.price.toFixed(2)}`;
         } else {
           console.error("Element with ID 'listing-price' not found");
         }
@@ -1430,7 +1380,7 @@ document.addEventListener("DOMContentLoaded", () => {
         messageDiv.className = `message offer ${message.senderId === auth.currentUser.uid ? "sent" : "received"}`;
         messageDiv.innerHTML = `
           <div class="offer-content">
-            <strong>Offer:</strong> £${message.offerNumber}
+            <strong>Offer:</strong> $${message.offerNumber}
             ${message.status === "accepted" ? '<span class="offer-status accepted">Accepted</span>' : ''}
           </div>
           <div class="message-time">${formattedTime}</div>
@@ -1465,7 +1415,7 @@ document.addEventListener("DOMContentLoaded", () => {
         // Display the offer details
         messageDiv.innerHTML = `
           <div class="offer-content">
-            <strong>Offer:</strong> £${message.offerNumber}
+            <strong>Offer:</strong> $${message.offerNumber}
             ${message.status === "accepted" ? '<span class="offer-status accepted">Accepted</span>' : ''}
           </div>
           <div class="message-time">${formattedTime}</div>
@@ -1697,7 +1647,7 @@ document.addEventListener("DOMContentLoaded", () => {
                         <h4>${listingData.title}</h4>
                         <p><strong>Condition:</strong> ${listingData.condition}</p>
                         <p><strong>Quantity:</strong> ${cartItem.quantity}</p>
-                        <p><strong>Price:</strong> £${cartItem.totalPrice.toFixed(2)}</p>
+                        <p><strong>Price:</strong> $${cartItem.totalPrice.toFixed(2)}</p>
                       </div>
                     </div>
                   `;

@@ -1283,10 +1283,6 @@ select {
     margin-right: 1rem;
   }
 
-  .listing-title {
-    font-weight: bold;
-    font-size: 1rem;
-  }
   
   #top-reviews {
     display: flex;
@@ -1316,7 +1312,7 @@ select {
     padding-bottom: 20px;
   }
 
-/* Chat Layout */
+/*----------------------------Chat Layout-------------------------------------*/
 .unread-badge {
   background: red;
   color: white;
@@ -1330,7 +1326,12 @@ select {
 
 .chat-layout {
   display: flex;
+  padding-top: 100px;
+  width: 80%;
   height: calc(100vh - 100px); /* Adjust based on header height */
+  margin-left: auto;
+  margin-right: auto;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
 }
 
 /* Chat List Sidebar */
@@ -1387,7 +1388,6 @@ select {
   flex: 1;
   display: flex;
   flex-direction: column;
-  padding: 20px;
 }
 
 .listing-details {
@@ -1405,7 +1405,6 @@ select {
 .chat-messages {
   flex: 1;
   overflow-y: auto;
-  border: 1px solid #ccc;
   padding: 10px;
   margin-bottom: 20px;
 }
@@ -1435,29 +1434,30 @@ select {
   margin-top: 4px;
 }
 
-.message-input {
-  display: flex;
-  gap: 10px;
-}
 
 .message-input input {
   flex: 1;
   padding: 8px;
-  border: 1px solid #ccc;
+  border: 0px solid #ccc;
+  background: transparent;
   border-radius: 4px;
+  width: 90%;
+  height: 100%;
 }
 
 .message-input button {
   padding: 8px 16px;
-  background-color: #007bff;
-  color: white;
+  background: transparent;
+  color: black;
   border: none;
   border-radius: 4px;
   cursor: pointer;
+  width: 10%;
+  height: 100%;
 }
 
 .message-input button:hover {
-  background-color: #0056b3;
+  background-color: #f1f1f1;
 }
 
 /* Chat Header */
@@ -1479,6 +1479,7 @@ select {
   flex-direction: row;
   align-items: center;
   justify-content: space-between;
+  height: 100px;
 }
 
 .user-info{
@@ -1507,7 +1508,7 @@ select {
 
 #listing-title-chat {
   margin: 0;
-  color: #666;
+  color: #000000;
   font-size: 0.9rem;
 }
 
@@ -1520,8 +1521,8 @@ select {
 }
 
 #chat-listing-image {
-  width: 50px;
-  height: 50px;
+  width: 70px;
+  height: 70px;
   border-radius: 5px;
   object-fit: cover;
 }
@@ -1530,15 +1531,21 @@ select {
   flex-grow: 1;
 }
 
+.listing-info p h1{
+  color: black;
+}
+
 #listing-title {
   font-size: 14px;
-  color: #ddd;
+  color: #000000;
+  font-weight: bold;
+  font-size: 1rem;
 }
 
 #chat #listing-price {
   font-size: 14px;
   font-weight: bold;
-  color: #fff;
+  color: #757171;
 }
 
 .make-offer {
@@ -1558,10 +1565,11 @@ select {
 .message-input {
   position: sticky;
   bottom: 0;
-  background: white;
   padding: 15px 0;
+  display: flex;
+  gap: 10px;
+  width: 100%;
 }
-
 /* No Chats Message */
 .no-chats-message {
   text-align: center;

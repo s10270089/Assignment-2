@@ -63,14 +63,16 @@
             <p id="listing-title-chat"></p>
           </div>
         </div>
+        <hr size="1" width="100%" color="grey">
         <div class="listing-container-chat">
           <div class="listing-preview">
             <img id="chat-listing-image" src="" alt="Listing Image">
-            <h1 id="listing-title"></h1>
-            <p id="listing-price"></p>
-            <p id="listing-condition"></p>
+            <div class="listing-info">
+              <h1 id="listing-title"></h1>
+              <p id="listing-price"></p>
+            </div>
           </div>
-
+          
           <div class="offer-container">
             <button id="send-offer">Make Offer</button>
             <!-- Offer Modal (aligned to the top) -->
@@ -82,7 +84,6 @@
                 <button id="submit-offer">Submit Offer</button>
               </div>
             </div>
-
             <!-- Existing Review Modal (ensure functions for open/close are global) -->
             <div id="review-modal" class="modal">
               <div id="modal-content">
@@ -95,8 +96,10 @@
             </div>
           </div>
         </div>
+        <hr size="1" width="100%" color="grey">
       </div>
       <div class="chat-messages"></div>
+      <hr size="1" width="100%" color="grey">
       <div class="message-input">
         <input type="text" id="message-input" placeholder="Type your message...">
         <button id="send-message">Send</button>
