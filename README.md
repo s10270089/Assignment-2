@@ -47,6 +47,10 @@ The design process focused on accessibility, simplicity, and engagement:
 
 **Wireframes & Mockups**
 Wireframes and prototypes were created using Figma to visualise layouts and workflows for desktop and mobile versions. These designs emphasised clarity and smooth navigation. View Wireframes.
+https://www.figma.com/design/AVvU1dYEHuB1j9UTaBb511/FED-Group-Assignement-2-(Lee-Meng%2FLouis)?node-id=0-1&t=2ydBIkkY7rUjbZ1o-1
+
+**Pitch Video**
+https://drive.google.com/file/d/1STADLlPhW3QtjidI0NDq38rjLmMkr6ZR/view?usp=sharing
 
 ## Features
 **Existing Features**
@@ -78,8 +82,6 @@ Wireframes and prototypes were created using Figma to visualise layouts and work
 - Listing creation, editing, and deletion
 - Real-time chat functionality including offer submissions and acceptance
 - Responsive design testing across multiple devices and browsers
-
-**Test Case**
 
 ## Cross-Browser Compatibility
 The application was tested on the following browsers:
