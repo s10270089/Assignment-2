@@ -110,7 +110,7 @@ body {
 }
 
 /* Header Icons */
-.inner .header-icons i {
+#index .inner .header-icons i {
   height: 15px;
   width: 15px;
   color: #212b36;
@@ -118,13 +118,47 @@ body {
   transition: color 0.2s ease;
 }
 
-.inner .header-icons a:hover {
+#index .inner .header-icons a:hover {
   color: #2ab27b;
 }
 .fa-shopping-cart{
   padding-left: 5px;
 }
 
+/* Inner header styling */
+.inner header.inner-header {
+  display: flex;
+  top: 0;
+  left: 0;
+  right: 5px;
+  z-index: 1000;
+  background-color: rgb(223, 220, 188);
+  color: #212b36;
+  padding: 1rem 2.5rem 1rem 1rem;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+  position: fixed;
+  margin: 1rem;
+  box-sizing: border-box; 
+}
+
+.inner header.inner-header.scrolled {
+  display: flex;
+  border-radius: 15px;
+  padding: 1rem 2.5rem 1rem 1rem;
+  background-color: rgb(223, 220, 188);
+  box-shadow: 0 20px 100px rgba(0, 0, 0, 0.2);
+  right: 17px;
+}
+
+.inner .header-container {
+  max-width: 1200px;
+  width: 100%;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
 
 /* 2. Modern Header */
 #index header {
@@ -343,7 +377,59 @@ nav ul li a {
     color: white;
     text-decoration: none;
 }
+/* ----------------------------About Page---------------------------- */
+#about_page {
+  background-color: #dfdcbc;
+  font-family: Arial, sans-serif;
+}
+.hero {
+  background: url('../images/about-bg.jpg') center/cover no-repeat;
+  color: white;
+  text-align: center;
+  padding: 80px 20px;
+}
 
+.second_hero {
+  background: url('../images/home-bg.jpg') center/cover no-repeat;
+  color: white;
+  text-align: center;
+  padding: 100px 20px;
+}
+
+.hero h1 {
+  font-size: 3rem;
+  margin-bottom: 10px;
+}
+.about-container {
+  max-width: 900px;
+  margin: 40px auto;
+  padding: 20px;
+  text-align: center;
+  background: white;
+  border-radius: 10px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+.about-container p {
+  font-size: 1.1rem;
+  line-height: 1.6;
+  color: #555;
+  margin-bottom: 20px;
+}
+.about-container h2 {
+  color: #333;
+  margin-top: 40px;
+}
+
+.content-section {
+  max-width: 1000px;
+  margin: 40px auto;
+  padding: 20px;
+  text-align: center;
+  background: white;
+  border-radius: 10px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+/* ----------------------------Form CSS---------------------------- */
 form {
     display: flex;
     flex-direction: column;
@@ -375,6 +461,7 @@ form button:hover {
     background-color: #45a049;
 }
 
+/* Listing Form */
 .listing {
     border: 1px solid #ccc;
     padding: 15px;
