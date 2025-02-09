@@ -25,7 +25,6 @@
               <li><a href="listings.html">Browse</a></li>
               <li><a href="upload.html">Sell</a></li>
               <li><a href="about.html">About</a></li>
-              <li><a href="contact.html">Contact</a></li>
             </ul>
           </nav>
           <!-- Right: Utility Icons -->
@@ -46,49 +45,54 @@
         </div>
       </header>
     <main class="listing-container">
+      <div class="listing-row-set">
         <div class="image-gallery">
             <img id="listing-image" src="" alt="listing image">
         </div>
-        
         <div class="listing-info">
+          <div class="listing-detail-main">
             <h1 id="listing-title"></h1>
             <p class="price" id="listing-price"></p>
-            <div class="listing-meta">
-                <span id="listing-condition"></span>
-                <span id="listing-date"></span>
-            </div>
+            <h3>Details</h3>
+            <h4>Condition</h4>
+            <span id="listing-condition"></span>
+            <h4>Date Listed</h4>
+            <span id="listing-date"></span>
+            <h4>Description</h4>
             <p class="description" id="listing-description"></p>
-            
-            <div class="seller-info">
-                <h2>Seller Information</h2>
-                <div id="seller-details">
-                    <img src="" alt="Seller profile" id="seller-avatar">
-                    <div>
-                        <p id="seller-name"></p>
-                        <p id="seller-joined"></p>
-                    </div>
-                </div>
-                <button id="contact-seller">Contact Seller</button>
-                <div class="action-buttons">
-                    <button id="edit-listing" class="hidden">Edit Listing</button>
-                    <button id="start-chat">Chat with Seller</button>
-                  </div>
-                  
-                  <div id="chat-modal" class="modal hidden">
-                    <div class="modal-content">
-                      <div class="chat-header">
-                        <h3>Chat about <span id="chat-listing-title"></span></h3>
-                        <span class="close">&times;</span>
-                      </div>
-                      <div class="chat-messages"></div>
-                      <div class="chat-input">
-                        <input type="text" id="message-input" placeholder="Type your message...">
-                        <button id="send-message">Send</button>
-                      </div>
-                    </div>
-                  </div>
-            </div>
+          </div>
         </div>
+          
+        </div>
+        <div class="seller-info">
+          <h2>Seller Information</h2>
+          <div id="seller-details">
+              <img src="" alt="Seller profile" id="seller-avatar">
+              <div>
+                  <p id="seller-name"></p>
+                  <p id="seller-joined"></p>
+              </div>
+          </div>
+          <button id="contact-seller">Contact Seller</button>
+          <div class="action-buttons">
+              <button id="edit-listing" class="hidden">Edit Listing</button>
+              <button id="start-chat">Chat with Seller</button>
+            </div>
+            
+            <div id="chat-modal" class="modal hidden">
+              <div class="modal-content">
+                <div class="chat-header">
+                  <h3>Chat about <span id="chat-listing-title"></span></h3>
+                  <span class="close">&times;</span>
+                </div>
+                <div class="chat-messages"></div>
+                <div class="chat-input">
+                  <input type="text" id="message-input" placeholder="Type your message...">
+                  <button id="send-message">Send</button>
+                </div>
+              </div>
+            </div>
+      </div>
     </main>
     <script type="module" src="https://www.gstatic.com/firebasejs/9.16.0/firebase-app.js"></script>
     <script type="module" src="https://www.gstatic.com/firebasejs/9.16.0/firebase-auth.js"></script>

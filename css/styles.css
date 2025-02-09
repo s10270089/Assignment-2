@@ -599,18 +599,36 @@ nav ul li a {
 
 /* ----------------------------About Page---------------------------- */
 #about_page {
-  background-color: #dfdcbc;
+  background: linear-gradient(to right, #f2edc5, #f0d79e) !important;
   font-family: Arial, sans-serif;
 }
+
+#about_page header.inner-header {
+  position: fixed;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%) translateY(0);
+  width: 80%;
+  z-index: 1000;
+  background: transparent;
+  transition: background-color 0.3s ease, box-shadow 0.3s ease, padding 0.3s ease, transform 0.3s ease;
+  padding: 20px 40px;
+}
+
+#about_page header.inner-header.floating {
+  background: #fff; 
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  padding: 10px 40px;
+  transform: translateX(-50%) translateY(20px);
+}
+
 .hero {
-  background: url('../images/about-bg.jpg') center/cover no-repeat;
-  color: white;
+  padding-top: 150px;
+  color: black;
   text-align: center;
-  padding: 80px 20px;
 }
 
 .second_hero {
-  background: url('../images/home-bg.jpg') center/cover no-repeat;
   color: white;
   text-align: center;
   padding: 100px 20px;
@@ -648,6 +666,10 @@ nav ul li a {
   background: white;
   border-radius: 10px;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.features-grid{
+  padding-bottom: 20px;
 }
 /* ----------------------------Form CSS---------------------------- */
 form {
@@ -1059,40 +1081,65 @@ select {
     border-radius: 8px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
   }
+
 /* Listing Details Page */
-.listing-container {
+#listing-details .listing-container {
   display: flex;
   gap: 2rem;
   padding: 2rem;
+  padding-top: 150px;
   max-width: 1200px;
   margin: 0 auto;
+  flex-direction: column;
+}
+
+#listing-details .listing-container h1 {
+  font-size: 2.5rem;
+  margin: 0;
+  color: black;
+}
+
+#listing-details .listing-container p {
+  color: #000000;
+}
+
+#listing-details .listing-container #price{
+  color: black;
 }
 
 .image-gallery {
   flex: 1;
+  width: 50%;
 }
 
 .image-gallery img {
   width: 100%;
   border-radius: 8px;
 }
+.listing-row-set{
+  display: flex;
+  flex-direction: row;
+}
+
+.listing-detail-main{
+  flex: 1;
+  padding: 2rem;
+  border-radius: 16px;
+  width: 100%;
+  background-color: #D8D6C5;
+}
 
 .listing-info {
   flex: 1;
-  padding: 1rem;
+  padding: 2rem;
+  border-radius: 16px;
+  width: 50%;
 }
 
 .price {
   font-size: 2rem;
   color: #2ecc71;
-  font-weight: bold;
-}
-
-.listing-meta {
-  display: flex;
-  gap: 1rem;
-  margin: 1rem 0;
-  color: #666;
+  margin: 0;
 }
 
 #listing-details .seller-info {
@@ -1479,7 +1526,7 @@ select {
   color: #ddd;
 }
 
-#listing-price {
+#chat #listing-price {
   font-size: 14px;
   font-weight: bold;
   color: #fff;

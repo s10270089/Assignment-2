@@ -121,7 +121,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const currentPage = document.body.id;
 
   if (currentPage !== "index") {
-    const header = document.querySelector('.inner header.inner-header');
+    const header = document.querySelector(".inner header.inner-header");
     const scrollThreshold = 50; // Change this value as needed
 
     window.addEventListener("scroll", function () {
