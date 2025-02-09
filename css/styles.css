@@ -461,6 +461,106 @@ form button:hover {
     background-color: #45a049;
 }
 
+/* ----------------------------Sign up CSS---------------------------- */
+#profile-picture {
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid #2ab27b;
+  margin: 1rem auto;
+  display:none; /* Start hidden */
+}
+  
+#upload-section {
+  max-width: 400px;
+  margin: 2rem auto;
+  padding: 2rem;
+  text-align: center;
+  background: #f8f9fa;
+  border-radius: 10px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+#upload-section label {
+  display: block;
+  margin: 1rem 0;
+  font-weight: 600;
+  color: #212b36;
+}
+
+.upload-container {
+  margin: 1rem 0;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.upload-label {
+  color: #212b36;
+  font-weight: 500;
+}
+
+.custom-file-button {
+  padding: 8px 16px;
+  background-color: #2ab27b;
+  color: white;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.custom-file-button:hover {
+background-color: #218838;
+}
+
+#upload-section input[type="file"] {
+  margin: 1rem auto;
+  padding: 0.5rem;
+  border: 2px dashed #ccc;
+  border-radius: 8px;
+  width: 100%;
+  cursor: pointer;
+}
+
+#upload-section input[type="file"]::file-selector-button {
+  padding: 0.5rem 1rem;
+  background-color: #2ab27b;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+#upload-section input[type="file"]::file-selector-button:hover {
+  background-color: #218838;
+}
+
+#upload-section button {
+  padding: 0.75rem 2rem;
+  margin: 0.5rem;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: transform 0.2s, opacity 0.2s;
+}
+
+#submit-form {
+  background-color: #2ab27b;
+  color: white;
+}
+
+#skip-upload {
+  background-color: #6c757d;
+  color: white;
+}
+
+#upload-section button:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
 /* Listing Form */
 .listing {
     border: 1px solid #ccc;
