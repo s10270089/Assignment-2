@@ -122,7 +122,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const dropbtn = document.querySelector(".dropbtn");
   const dropdownContent = document.querySelector(".dropdown-content");
-
   // Toggle dropdown when the user icon is clicked
   dropbtn.addEventListener("click", (e) => {
     e.stopPropagation(); // Prevent click from bubbling up
@@ -487,86 +486,96 @@ document.addEventListener("DOMContentLoaded", () => {
     async function renderListings(querySnapshot) {
       const recentListingsContainer = document.getElementById("recent-listings");
       const wholesaleListingsContainer = document.getElementById("wholesale-listings");
-
+    
       recentListingsContainer.innerHTML = "";
       wholesaleListingsContainer.innerHTML = "";
-
-      const listingsQuery = query(collection(db, "listings"), orderBy("createdAt", "desc"));
-      querySnapshot.forEach(async (docSnap) => {
-          const listing = docSnap.data();
-          const listingId = docSnap.id;
-
-          // Fetch seller details
-          const userDoc = await getDoc(doc(db, "users", listing.userId));
-          let sellerInfo = `<p>Unknown Seller</p>`;
-          if (userDoc.exists()) {
-              const userData = userDoc.data();
-              sellerInfo = `
-                  <div class="seller-info">
-                      <img src="${userData.profilePicture}" alt="${userData.username}" class="seller-image">
-                      <span>${userData.username}</span>
-                  </div>
-              `;
-          }
-
-          // Show correct price
-          let priceDisplay = "";
-          if (listing.listingType === "post") {
-              priceDisplay = `Price: £${listing.price.toFixed(2)}`;
-          } else if (listing.listingType === "wholesale" && listing.pricingOptions.length > 0) {
-              const minPrice = Math.min(...listing.pricingOptions.map(opt => opt.price));
-              priceDisplay = `Starting from: £${minPrice.toFixed(2)} per unit`;
-          }
-
-          // Add to Cart button only for wholesale
-          let actionSection = "";
-          if (listing.listingType === "wholesale") {
-              let optionsHtml = listing.pricingOptions.map(option =>
-                  `<option value="${option.quantity}-${option.price}">${option.quantity} units @ £${option.price.toFixed(2)} each</option>`
-              ).join("");
-
-              actionSection = `
-                  <label for="quantity-select-${listingId}">Select Quantity:</label>
-                  <select id="quantity-select-${listingId}">
-                      ${optionsHtml}
-                  </select>
-                  <button class="add-to-cart" data-id="${listingId}">Add to Cart</button>
-              `;
-          }
-
-          // Create listing card
-          const listingElement = document.createElement("div");
-          listingElement.classList.add("listing-card");
-          listingElement.innerHTML = `
-          <div class="listing-page-container">
-              ${sellerInfo} <!-- Seller info at the top -->
-              <a href="listing-details.html?id=${listingId}">
-                  <img src="${listing.imageUrl}" alt="${listing.title}">
-              </a>
-              <h3>${listing.title}</h3>
-              <p>${priceDisplay}</p>
-              <p>Condition: ${listing.condition}</p>
-              ${actionSection} <!-- Add to Cart only for wholesale -->
-          </div>
+    
+      // Map over all documents and render listings.
+      const renderPromises = querySnapshot.docs.map(async (docSnap) => {
+        const listing = docSnap.data();
+        const listingId = docSnap.id;
+    
+        // Fetch seller details.
+        const userDoc = await getDoc(doc(db, "users", listing.userId));
+        let sellerInfo = `<p>Unknown Seller</p>`;
+        if (userDoc.exists()) {
+          const userData = userDoc.data();
+          sellerInfo = `
+            <div class="seller-info">
+              <img src="${userData.profilePicture}" alt="${userData.username}" class="seller-image">
+              <span>${userData.username}</span>
+            </div>
           `;
+        }
+    
+        // Determine price display.
+        let priceDisplay = "";
+        if (listing.listingType === "post") {
+          priceDisplay = `Price: $${listing.price.toFixed(2)}`;
+        } else if (listing.listingType === "wholesale" && listing.pricingOptions.length > 0) {
+          const minPrice = Math.min(...listing.pricingOptions.map(opt => opt.price));
+          priceDisplay = `Starting from: $${minPrice.toFixed(2)} per unit`;
+        }
+    
+        // Build the action section only for wholesale listings.
+        let actionSection = "";
+        if (listing.listingType === "wholesale") {
+          let optionsHtml = listing.pricingOptions.map(option =>
+            `<option value="${option.quantity}-${option.price}">${option.quantity} units @ £${option.price.toFixed(2)} each</option>`
+          ).join("");
+    
+          actionSection = `
+            <label for="quantity-select-${listingId}">Select Quantity:</label>
+            <select id="quantity-select-${listingId}">
+              ${optionsHtml}
+            </select>
+            <button class="add-to-cart" data-id="${listingId}">Add to Cart</button>
+          `;
+        }
+    
+        // Create the listing card.
+        const listingElement = document.createElement("div");
+        listingElement.classList.add("listing-card");
+        listingElement.innerHTML = `
+          <div class="listing-page-container">
+            ${sellerInfo}
+            <a href="listing-details.html?id=${listingId}">
+              <img src="${listing.imageUrl}" alt="${listing.title}">
+            </a>
+            <h3>${listing.title}</h3>
+            <p>${priceDisplay}</p>
+            <p>Condition: ${listing.condition}</p>
+            ${actionSection}
+          </div>
+        `;
+    
+        // Append wholesale listings only to the wholesale container.
         if (listing.listingType === "wholesale") {
           wholesaleListingsContainer.appendChild(listingElement);
         }
-      
-      recentListingsContainer.appendChild(listingElement.cloneNode(true));
+        // Append a clone to the recent listings container.
+        recentListingsContainer.appendChild(listingElement.cloneNode(true));
       });
-
-      // ✅ Handle "Add to Cart" for wholesale listings
-      document.querySelectorAll(".add-to-cart").forEach(button => {
-          button.addEventListener("click", (event) => {
-              const listingId = event.target.dataset.id;
-              const select = document.getElementById(`quantity-select-${listingId}`);
-              const [quantity, price] = select.value.split("-").map(Number);
-              addToCart(listingId, quantity, price);
-          });
+    
+      // Wait for all listings to be rendered.
+      await Promise.all(renderPromises);
+    
+      // Now attach event listeners to the "Add to Cart" buttons inside the wholesale container.
+      wholesaleListingsContainer.querySelectorAll(".add-to-cart").forEach(button => {
+        button.addEventListener("click", (event) => {
+          const listingId = event.target.dataset.id;
+          // Use the select element from the wholesale container.
+          const select = wholesaleListingsContainer.querySelector(`#quantity-select-${listingId}`);
+          if (!select) {
+            console.error("Select element not found for listingId:", listingId);
+            return;
+          }
+          const [quantity, price] = select.value.split("-").map(Number);
+          console.log(`Adding to cart: listingId=${listingId}, quantity=${quantity}, price=${price}`);
+          addToCart(listingId, quantity, price);
+        });
       });
-  }
-
+    }
     // Search Button Event Listener
     document.getElementById("search-btn").addEventListener("click", () => {
       const queryString = document.getElementById("search-input").value.trim();
@@ -603,24 +612,26 @@ document.addEventListener("DOMContentLoaded", () => {
         const auth = getAuth();
         const user = auth.currentUser;
         if (!user) {
-            alert("You must be logged in to add items to cart.");
-            return;
+          alert("You must be logged in to add items to cart.");
+          return;
         }
-    
+      
         try {
-            await addDoc(collection(db, "carts", user.uid, "items"), {
-                listingId,
-                quantity,
-                pricePerUnit: price,
-                totalPrice: quantity * price,
-                timestamp: serverTimestamp()
-            });
-    
-            alert(`Added ${quantity} units to cart at £${price.toFixed(2)} per unit.`);
+          console.log("Attempting to add to cart:", { listingId, quantity, price });
+          await addDoc(collection(db, "carts", user.uid, "items"), {
+            listingId,
+            quantity,
+            pricePerUnit: price,
+            totalPrice: quantity * price,
+            timestamp: serverTimestamp()
+          });
+          alert(`Added ${quantity} units to cart at £${price.toFixed(2)} per unit.`);
         } catch (error) {
-            console.error("Error adding to cart:", error);
+          console.error("Error adding to cart:", error);
+          alert("Failed to add item to cart. Please try again.");
         }
-    }
+      }
+      
   }
   // ========================== Upload Page ========================== //
   else if (currentPage === "upload") {
@@ -1614,104 +1625,86 @@ document.addEventListener("DOMContentLoaded", () => {
         alert("Failed to submit review. Please try again.");
       }
     });    
-  }else if (currentPage === "cart"){
-    async function loadCart() {
-      const auth = getAuth();
-      const user = auth.currentUser;
-      if (!user) {
-          alert("You must be logged in to view your cart.");
-          window.location.href = "index.html";
-          return;
-      }
-  
-      const cartContainer = document.getElementById("cart-items");
-      const totalElement = document.getElementById("cart-total");
-      cartContainer.innerHTML = "";
-  
-      const cartQuery = collection(db, "carts", user.uid, "items");
-      const querySnapshot = await getDocs(cartQuery);
-  
-      let total = 0;
-  
-      querySnapshot.forEach(async (docSnap) => {
-          const cartItem = docSnap.data();
-          const cartItemId = docSnap.id;
-  
-          // Fetch listing details
-          const listingDoc = await getDoc(doc(db, "listings", cartItem.listingId));
-          if (!listingDoc.exists()) return;
-          const listing = listingDoc.data();
-  
-          // Fetch seller details
-          const userDoc = await getDoc(doc(db, "users", listing.userId));
-          let sellerInfo = `<p>Unknown Seller</p>`;
-          if (userDoc.exists()) {
-              const userData = userDoc.data();
-              sellerInfo = `
-                  <div class="seller-info">
-                      <img src="${userData.profilePicture}" alt="${userData.username}" class="seller-image">
-                      <span>${userData.username}</span>
-                  </div>
-              `;
-          }
-  
-          // Calculate total price
-          const itemTotal = cartItem.quantity * cartItem.pricePerUnit;
-          total += itemTotal;
-  
-          // Create cart item element
-          const cartItemElement = document.createElement("div");
-          cartItemElement.classList.add("cart-item");
-          cartItemElement.innerHTML = `
-              ${sellerInfo}
-              <a href="listing-details.html?id=${cartItem.listingId}">
-                  <img src="${listing.imageUrl}" alt="${listing.title}">
-              </a>
-              <h3>${listing.title}</h3>
-              <p>Price per unit: £${cartItem.pricePerUnit.toFixed(2)}</p>
-              <label for="quantity-${cartItemId}">Quantity:</label>
-              <input type="number" id="quantity-${cartItemId}" value="${cartItem.quantity}" min="1">
-              <p>Total: £<span id="total-${cartItemId}">${itemTotal.toFixed(2)}</span></p>
-              <button class="remove-from-cart" data-id="${cartItemId}">Remove</button>
-          `;
-  
-          cartContainer.appendChild(cartItemElement);
-  
-          // Update total price when quantity changes
-          document.getElementById(`quantity-${cartItemId}`).addEventListener("input", async (event) => {
-              const newQuantity = parseInt(event.target.value);
-              if (newQuantity < 1) return;
-              
-              const newTotal = newQuantity * cartItem.pricePerUnit;
-              document.getElementById(`total-${cartItemId}`).textContent = newTotal.toFixed(2);
-  
-              total = total - itemTotal + newTotal;
-              totalElement.textContent = total.toFixed(2);
-  
-              // Update Firestore
-              await updateDoc(doc(db, "carts", user.uid, "items", cartItemId), {
-                  quantity: newQuantity,
-                  totalPrice: newTotal
-              });
-          });
-  
-          // Remove item from cart
-          document.querySelector(`.remove-from-cart[data-id="${cartItemId}"]`).addEventListener("click", async () => {
-              await deleteDoc(doc(db, "carts", user.uid, "items", cartItemId));
-              loadCart(); // Refresh cart
-          });
+  }
+  else if (currentPage === "checkout"){
+    // When the checkout page loads, subscribe to the cart updates.
+      subscribeToCart();
+    
+      // Listen for form submission to proceed to payment.
+      document.getElementById("checkout-form").addEventListener("submit", function (event) {
+        event.preventDefault();
+        window.location.href = "payment.html";
       });
-  
-      totalElement.textContent = total.toFixed(2);
-  }
-  
-  // Load cart when on cart page
-  if (document.getElementById("cart-page")) {
-      loadCart();
-  }
-  
-  }
 
+      function subscribeToCart() {
+        const auth = getAuth();
+      
+        onAuthStateChanged(auth, async (user) => {
+          if (!user) {
+            document.getElementById("cart-items").innerHTML = "<p>Please log in to view your cart.</p>";
+            return;
+          }
+      
+          const cartRef = collection(db, "carts", user.uid, "items");
+      
+          onSnapshot(cartRef, async (snapshot) => {
+            const cartContainer = document.getElementById("cart-items");
+            cartContainer.innerHTML = "";
+            
+            if (snapshot.empty) {
+              cartContainer.innerHTML = "<p>Your cart is empty.</p>";
+              return;
+            }
+      
+            let itemsTotal = 0;
+            const deliveryFee = 8.48;
+      
+            for (const docSnap of snapshot.docs) {
+              const cartItem = docSnap.data();
+              const listingId = cartItem.listingId;
+      
+              if (!listingId) continue;
+      
+              try {
+                // Fetch the listing details
+                const listingDoc = await getDoc(doc(db, "listings", listingId));
+      
+                if (listingDoc.exists()) {
+                  const listingData = listingDoc.data();
+                  
+                  // Update total price
+                  itemsTotal += cartItem.totalPrice;
+      
+                  // Create cart item element
+                  const itemElement = document.createElement("div");
+                  itemElement.classList.add("cart-item");
+                  itemElement.innerHTML = `
+                    <div class="cart-item">
+                      <img src="${listingData.imageUrl}" alt="${listingData.title}" class="cart-item-image">
+                      <div class="cart-item-details">
+                        <h4>${listingData.title}</h4>
+                        <p><strong>Condition:</strong> ${listingData.condition}</p>
+                        <p><strong>Quantity:</strong> ${cartItem.quantity}</p>
+                        <p><strong>Price:</strong> £${cartItem.totalPrice.toFixed(2)}</p>
+                      </div>
+                    </div>
+                  `;
+      
+                  cartContainer.appendChild(itemElement);
+                }
+              } catch (error) {
+                console.error("Error fetching listing details:", error);
+              }
+            }
+      
+            // Update price details
+            document.getElementById("items-total").textContent = itemsTotal.toFixed(2);
+            document.getElementById("delivery-fee").textContent = deliveryFee.toFixed(2);
+            document.getElementById("order-total").textContent = (itemsTotal + deliveryFee).toFixed(2);
+          });
+        });
+      }      
+  }
   async function sendOffer(chatId, offerAmount) {
     if (!chatId) {
       console.error("Missing chat ID");
