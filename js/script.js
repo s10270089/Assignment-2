@@ -1100,55 +1100,55 @@ document.addEventListener("DOMContentLoaded", () => {
     // Add this after loading listing details
     const currentUser = auth.currentUser;
     
-    // Determine if user is seller
-    const isSeller = currentUser && currentUser.uid === listingData.userId;
+    // // Determine if user is seller
+    // const isSeller = currentUser && currentUser.uid === listingData.userId;
     
-    // Show appropriate buttons
-    if (isSeller) {
-      document.getElementById('edit-listing').classList.remove('hidden');
-      document.getElementById('start-chat').classList.add('hidden');
-    }
+    // // Show appropriate buttons
+    // if (isSeller) {
+    //   document.getElementById('edit-listing').classList.remove('hidden');
+    //   document.getElementById('start-chat').classList.add('hidden');
+    // }
 
-    // Chat modal handling
-    const chatModal = document.getElementById('chat-modal');
-    const chatMessages = document.querySelector('.chat-messages');
-    const messageInput = document.getElementById('message-input');
+    // // Chat modal handling
+    // const chatModal = document.getElementById('chat-modal');
+    // const chatMessages = document.querySelector('.chat-messages');
+    // const messageInput = document.getElementById('message-input');
 
-    document.getElementById('start-chat').addEventListener('click', async () => {
-      if (!currentUser) {
-        alert('Please login to start chatting');
-        window.location.href = 'login.html';
-        return;
-      }
+    // document.getElementById('start-chat').addEventListener('click', async () => {
+    //   if (!currentUser) {
+    //     alert('Please login to start chatting');
+    //     window.location.href = 'login.html';
+    //     return;
+    //   }
       
-      chatModal.classList.remove('hidden');
-      loadChatMessages();
-    });
+    //   chatModal.classList.remove('hidden');
+    //   loadChatMessages();
+    // });
 
-    // Function to load chat messages
-    async function loadChatMessages(chatId) {
-      if (activeChatId !== chatId) return;
-      const messagesRef = collection(db, "chats", chatId, "messages");
-      const q = query(messagesRef, orderBy("timestamp", "asc"));
+    // // Function to load chat messages
+    // async function loadChatMessages(chatId) {
+    //   if (activeChatId !== chatId) return;
+    //   const messagesRef = collection(db, "chats", chatId, "messages");
+    //   const q = query(messagesRef, orderBy("timestamp", "asc"));
 
-      onSnapshot(q, (snapshot) => {
-        const chatMessages = document.querySelector('.chat-messages');
-        chatMessages.innerHTML = '';
-        snapshot.forEach((doc) => {
-          const message = doc.data();
-          const messageDiv = document.createElement('div');
-          messageDiv.className = `message ${message.senderId === user.uid ? 'sent' : 'received'}`;
-          messageDiv.innerHTML = `
-            <div class="message-content">${message.text}</div>
-            <div class="message-time">${new Date(message.timestamp?.toDate()).toLocaleTimeString()}</div>
-          `;
-          chatMessages.appendChild(messageDiv);
-        });
+    //   onSnapshot(q, (snapshot) => {
+    //     const chatMessages = document.querySelector('.chat-messages');
+    //     chatMessages.innerHTML = '';
+    //     snapshot.forEach((doc) => {
+    //       const message = doc.data();
+    //       const messageDiv = document.createElement('div');
+    //       messageDiv.className = `message ${message.senderId === user.uid ? 'sent' : 'received'}`;
+    //       messageDiv.innerHTML = `
+    //         <div class="message-content">${message.text}</div>
+    //         <div class="message-time">${new Date(message.timestamp?.toDate()).toLocaleTimeString()}</div>
+    //       `;
+    //       chatMessages.appendChild(messageDiv);
+    //     });
 
-        // Scroll to the bottom of the chat
-        chatMessages.scrollTop = chatMessages.scrollHeight;
-      });
-    }
+    //     // Scroll to the bottom of the chat
+    //     chatMessages.scrollTop = chatMessages.scrollHeight;
+    //   });
+    // }
 
     async function getOrCreateChat() {
       const chatsRef = collection(db, 'chats');
