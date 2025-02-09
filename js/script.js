@@ -912,12 +912,12 @@ document.addEventListener("DOMContentLoaded", () => {
           const reviewElement = document.createElement("div");
           reviewElement.className = "review";
           reviewElement.innerHTML = `
-            ${listingHtml}
             ${reviewerHtml}
             <div class="review-details">
               <div class="rating">${"★".repeat(review.rating)}</div>
               <p class="comment">${review.comment}</p>
               <small>${new Date(review.timestamp?.toDate()).toLocaleDateString()}</small>
+              ${listingHtml}
             </div>
           `;
           
@@ -1232,6 +1232,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
         if (activeChatId === chatId) return; 
         activeChatId = chatId;
+        history.pushState(null, "", `chat.html?chatId=${chatId}&listingId=${listingId}`);
         await updateDoc(doc(db, "chats", chatId), {
           unreadCount: 0
         });
@@ -1257,7 +1258,6 @@ document.addEventListener("DOMContentLoaded", () => {
         const listingImageElement = document.getElementById('chat-listing-image');
         const listingTitleElement = document.getElementById('listing-title');
         const listingPriceElement = document.getElementById('listing-price');
-        const listingConditionElement = document.getElementById('listing-condition');
     
         if (listingImageElement) {
           listingImageElement.src = listingData.imageUrl;
@@ -1277,11 +1277,6 @@ document.addEventListener("DOMContentLoaded", () => {
           console.error("Element with ID 'listing-price' not found");
         }
     
-        if (listingConditionElement) {
-          listingConditionElement.textContent = `Condition: ${listingData.condition}`;
-        } else {
-          console.error("Element with ID 'listing-condition' not found");
-        }
         if (!listingId) {
           throw new Error("Listing ID is missing.");
         }
@@ -1388,7 +1383,24 @@ document.addEventListener("DOMContentLoaded", () => {
           const acceptButton = document.createElement('button');
           acceptButton.textContent = 'Accept Offer';
           acceptButton.className = 'accept-offer-btn';
-          acceptButton.onclick = () => acceptOffer(chatId, messageId, message.senderId);
+          acceptButton.dataset.messageId = messageId;
+          acceptButton.onclick = () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const chatId = urlParams.get("chatId");
+            // Correct: Use messageId from the closure (appendMessage's parameter)
+            const senderId = message.senderId; // message is defined in the loop
+          
+            console.log("Accept Offer Clicked:", { chatId, messageId, senderId });
+          
+            if (!chatId || !messageId || !senderId) {
+              console.error("Missing required parameters:", { chatId, messageId, senderId });
+              alert("Error: Missing chat details. Please refresh the page.");
+              return;
+            }
+          
+            acceptOffer(chatId, messageId, senderId);
+          };
+        
           messageDiv.appendChild(acceptButton);
         }
         if (message.status === "accepted") {  
@@ -1423,7 +1435,24 @@ document.addEventListener("DOMContentLoaded", () => {
           const acceptButton = document.createElement('button');
           acceptButton.textContent = 'Accept Offer';
           acceptButton.className = 'accept-offer-btn';
-          acceptButton.onclick = () => acceptOffer(chatId, messageId, message.senderId);
+          acceptButton.dataset.messageId = messageId;
+          acceptButton.onclick = () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const chatId = urlParams.get("chatId");
+            // Correct: Use messageId from the closure (appendMessage's parameter)
+            const senderId = message.senderId; // message is defined in the loop
+          
+            console.log("Accept Offer Clicked:", { chatId, messageId, senderId });
+          
+            if (!chatId || !messageId || !senderId) {
+              console.error("Missing required parameters:", { chatId, messageId, senderId });
+              alert("Error: Missing chat details. Please refresh the page.");
+              return;
+            }
+          
+            acceptOffer(chatId, messageId, senderId);
+          };
+        
           messageDiv.appendChild(acceptButton);
         }
        if (message.status === "accepted") {
@@ -1717,17 +1746,38 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     try {
-        const messageRef = doc(db, "chats", chatId, "messages", messageId);
-        await updateDoc(messageRef, { status: "accepted" });
+      // If chatId is missing, search for it using listingId
+      if (!chatId) {
+          console.warn("chatId is missing, searching...");
+          chatId = await findChatIdByListingId(listingId, senderId);
 
-        const notificationsRef = collection(db, "notifications");
-        await addDoc(notificationsRef, {
-            type: "offer-accepted",
-            userId: senderId,
-            message: "Your offer has been accepted!",
-            timestamp: serverTimestamp(),
-            read: false
-        });
+          if (!chatId) {
+              console.error("Chat ID not found for listing:", listingId);
+              alert("Chat session not found.");
+              return;
+          }
+          console.log("Found chatId:", chatId);
+      }
+
+      const messageRef = doc(db, "chats", chatId, "messages", messageId);
+      const messageDoc = await getDoc(messageRef);
+
+      if (!messageDoc.exists()) {
+          console.error("Offer message not found:", messageId);
+          alert("Offer message not found.");
+          return;
+      }
+
+      await updateDoc(messageRef, { status: "accepted" });
+
+      await addDoc(collection(db, "notifications"), {
+          type: "offer-accepted",
+          userId: senderId,
+          message: "Your offer has been accepted!",
+          timestamp: serverTimestamp(),
+          read: false
+      });
+
 
         console.log("Offer accepted successfully");
     } catch (error) {
@@ -1750,4 +1800,20 @@ document.addEventListener("DOMContentLoaded", () => {
     const querySnapshot = await getDocs(q);
     return !querySnapshot.empty;
   }  
+
+  async function findChatIdByListingId(listingId, senderId) {
+    const chatsRef = collection(db, "chats");
+    const q = query(chatsRef, where("participantsIds", "array-contains", senderId));
+    const querySnapshot = await getDocs(q);
+
+    for (const chatDoc of querySnapshot.docs) {
+        const chatData = chatDoc.data();
+        if (chatData.listingId === listingId) {
+            return chatDoc.id;
+        }
+    }
+
+    return null;
+}
+
 });

@@ -29,7 +29,9 @@ body {
   justify-content: center;
   transition: opacity 0.5s ease;
 }
-
+.header-icons a{
+  color: black !important;
+}
 .mokesell-logo {
   font-family: "Montserrat", sans-serif;
   font-weight: 700;
@@ -314,13 +316,58 @@ nav a:hover {
 }
 
 /* 4. Features Grid */
-#about {
+#index #about {
   padding: 6rem 2rem;
   background: rgb(223, 220, 188);
   position: relative;
   z-index: 1;
 }
 
+.index-text-container{
+  width: 80%;
+  margin-left: auto;
+  margin-right: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.index-text-container h1 {
+  font-size: 4rem;
+  margin-bottom: 0;
+}
+
+.index-text-container h2 {
+  font-size: 3rem;
+  font-weight: normal;
+  margin: 0;
+}
+
+.story-image img{
+  width: auto;
+  height: 300px;
+  padding: 20px;
+}
+
+.index-story{
+  display: flex;
+  flex-direction: row;
+  width: 70%;
+  padding-top: 80px;
+  padding-bottom: 80px;
+}
+
+.story-content{
+  padding: 20px;
+}
+
+.story-content h3{
+  margin-top: 0;
+}
+
+.story-content h4{
+  color: rgba(0, 0, 0, 0.5);
+}
 .features-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -332,11 +379,13 @@ nav a:hover {
 .feature-card {
   padding: 2rem;
   border-radius: 12px;
-  background: white;
+  background: transparent;
   box-shadow: 0 5px 15px rgba(0,0,0,0.08);
   transition: transform 0.2s ease;
 }
-
+.feature-card img{
+  width: 350px;
+}
 .feature-card:hover {
   transform: translateY(-5px);
 }
@@ -400,6 +449,10 @@ nav ul li a {
   display: flex;
   justify-content: center;
   align-items: center;
+}
+
+#login form{
+  width: auto;
 }
 
 #login .mokesell-logo{
@@ -490,6 +543,9 @@ nav ul li a {
   align-items: center;
 }
 
+#signup form{
+  width: auto;
+}
 #signup .mokesell-logo {
   font-size: 1rem;
   font-weight: 800;
@@ -1243,7 +1299,15 @@ select {
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
     border-radius: 8px;
   }
-  
+
+  #profile #user-listings{
+    display: flex;
+    flex-direction: row;
+  }
+
+  #profile .listing-card{
+    width: auto;
+  }
   .profile .listing-card img {
     max-width: 100%;
     height: auto;
