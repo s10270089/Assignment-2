@@ -121,21 +121,15 @@ document.addEventListener("DOMContentLoaded", () => {
   const currentPage = document.body.id;
 
   if (currentPage !== "index") {
-    document.addEventListener("DOMContentLoaded", () => {
-      const header = document.querySelector('.inner-header');
-      let lastScrollTop = 0;
-    
-      window.addEventListener('scroll', () => {
-        let scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-    
-        if (scrollTop > 50) {
-          header.classList.add('scrolled'); // Add scrolled class when user scrolls down
-        } else {
-          header.classList.remove('scrolled'); // Remove scrolled class when at the top
-        }
-    
-        lastScrollTop = scrollTop <= 0 ? 0 : scrollTop; // For Mobile or negative scrolling
-      });
+    const header = document.querySelector('.inner header.inner-header');
+    const scrollThreshold = 50; // Change this value as needed
+
+    window.addEventListener("scroll", function () {
+      if (window.scrollY > scrollThreshold) {
+        header.classList.add("floating");
+      } else {
+        header.classList.remove("floating");
+      }
     });
   }
   const dropbtn = document.querySelector(".dropbtn");

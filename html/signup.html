@@ -5,110 +5,95 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MokeSell - Sign Up</title>
     <link rel="stylesheet" href="../css/styles.css">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Kanit:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Montserrat:ital,wght@0,100..900;1,100..900&family=Teko:wght@300..700&display=swap" rel="stylesheet">
 </head>
 <body id="signup">
     <header class="inner-header">
         <div class="header-container">
-          <!-- Left: Logo -->
-          <div class="logo">
-            <a href="index.html">
-              <img src="/Assignment-2-main/assets/photos/Logo-bg-removed.png" alt="MokeSell" />
-            </a>
-          </div>
-          <!-- Center: Navigation Menu -->
-          <nav class="main-nav">
-            <ul>
-              <li><a href="listings.html">Browse</a></li>
-              <li><a href="upload.html">Sell</a></li>
-              <li><a href="about.html">About</a></li>
-              <li><a href="contact.html">Contact</a></li>
-            </ul>
-          </nav>
-          <!-- Right: Utility Icons -->
-          <div class="header-icons">
-            <i id="search-btn" class="fa fa-search"></i>
-            <div class="dropdown">
-              <button class="dropbtn">
-                <i class="fa fa-user"></i>
-              </button>
-              <div class="dropdown-content">
-                <a href="profile.html">Profile</a>
-                <a href="settings.html">Settings</a>
-                <a href="#" id="logout-btn">Log Out</a>
-              </div>
-            </div>            
-          <a href="cart.html"><i class="fa fa-shopping-cart"></i></a>
-          </div>
+            <!-- Center: Navigation Menu -->
+            <nav class="main-nav">
+                <ul>
+                    <li><a href="listings.html">Browse</a></li>
+                    <li><a href="upload.html">Sell</a></li>
+                    <li><a href="about.html">About</a></li>
+                    <li><a href="contact.html">Contact</a></li>
+                </ul>
+            </nav>
+            <!-- Right: Utility Icons -->
+            <div class="header-icons">
+                <i id="search-btn" class="fa fa-search"></i>
+                <div class="dropdown">
+                    <button class="dropbtn">
+                        <i class="fa fa-user"></i>
+                    </button>
+                    <div class="dropdown-content">
+                        <a href="profile.html">Profile</a>
+                        <a href="settings.html">Settings</a>
+                        <a href="#" id="logout-btn">Log Out</a>
+                    </div>
+                </div>            
+                <a href="cart.html"><i class="fa fa-shopping-cart"></i></a>
+            </div>
         </div>
-      </header>
+    </header>
+
     <main>
         <section id="signup-section">
-            <h2>Sign Up</h2>
-            <form id="signupForm">
-                <label for="signup-username">Username:</label>
-                <input type="text" id="signup-username" required>
+            <div class="signup-container">
+                <div class="card-container">
+                    <div class="logo-container">
+                        <div class="logo">
+                            <a href="index.html">
+                                <img src="/assets/photos/Logo-bg-removed.png" alt="MokeSell" />
+                            </a>
+                        </div>
+                        <h1 class="mokesell-logo">
+                            MOKE<span>S</span>ELL
+                        </h1>          
+                    </div>
 
-                <label for="signup-email">Email:</label>
-                <input type="email" id="signup-email" required>
+                    <form id="signup-form">
+                        <h2>Sign Up</h2>
+                        <p>Join MokeSell today</p>
 
-                <label for="signup-password">Password:</label>
-                <input type="password" id="signup-password" required>
+                        <label for="signup-username">Username:</label>
+                        <input type="text" id="signup-username" required>
 
-                <label for="signup-confirm-password">Confirm Password:</label>
-                <input type="password" id="signup-confirm-password" required>
+                        <label for="signup-email">Email:</label>
+                        <input type="email" id="signup-email" required>
 
-                <label for="signup-dob">Date of Birth:</label>
-                <input type="date" id="signup-dob" required>
+                        <label for="signup-password">Password:</label>
+                        <input type="password" id="signup-password" required>
 
-                <label for="country-code">Country Code:</label>
-                <select id="country-code" required></select>
+                        <label for="signup-confirm-password">Confirm Password:</label>
+                        <input type="password" id="signup-confirm-password" required>
 
-                <label for="local-number">Phone Number:</label>
-                <input type="text" id="local-number" required>
+                        <label for="signup-dob">Date of Birth:</label>
+                        <input type="date" id="signup-dob" required>
 
-                <button type="button" id="next-btn">Next</button>
-            </form>
+                        <label for="country-code">Country Code:</label>
+                        <select id="country-code" required></select>
 
-            <div id="upload-section" style="display: none;">
-              <img id="image-preview" src="#" alt="Image Preview" style="display: none; justify-self: center;" width="200" height="200">
-              
-              <div class="upload-container">
-                  <span class="upload-label">Choose Profile Picture</span>
-                  <input 
-                          type="file" 
-                          id="file-input" 
-                          accept="image/*" 
-                          onchange="previewImage(event)"
-                      >
-              </div>
-          
-              <div class="button-group">
-                  <button type="button" id="submit-form">Submit</button>
-                  <button type="button" id="skip-upload">Skip</button>
-              </div>
-          </div>
+                        <label for="local-number">Phone Number:</label>
+                        <input type="text" id="local-number" required>
+
+                        <button type="submit">Sign Up</button>
+                    </form>
+
+                    <div class="nav-login">
+                        <p>Already have an account? <a href="login.html">Login here</a></p>
+                    </div>
+                </div>
+            </div>
         </section>
     </main>
 
-    <footer>
-        <p>&copy; 2025 MokeSell. All rights reserved.</p>
+    <footer class="footer">
+        <p>&copy; 2024 MokeSell. All Rights Reserved.</p>
     </footer>
 
     <script type="module" src="https://www.gstatic.com/firebasejs/9.16.0/firebase-app.js"></script>
     <script type="module" src="https://www.gstatic.com/firebasejs/9.16.0/firebase-auth.js"></script>
     <script type="module" src="https://www.gstatic.com/firebasejs/9.16.0/firebase-firestore.js"></script>
     <script type="module" src="../js/script.js"></script>
-    <script> 
-    // Function to preview the uploaded image
-        function previewImage(event) {
-         const imagePreview = document.getElementById('image-preview');
-         imagePreview.src = URL.createObjectURL(event.target.files[0]);
-         imagePreview.style.display = 'block';
-       }
-    </script>
 </body>
 </html>

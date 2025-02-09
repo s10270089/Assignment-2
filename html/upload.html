@@ -11,13 +11,13 @@
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
 </head>
-<body id="upload">
+<body id="upload" class="inner">
   <header class="inner-header">
     <div class="header-container">
       <!-- Left: Logo -->
       <div class="logo">
         <a href="index.html">
-          <img src="/assets/photos/Logo-bg-removed.png" alt="MokeSell" />
+          <img src="/assets/photos/Logo-bg-removed.png" alt="MokeSell">
         </a>
       </div>
       <!-- Center: Navigation Menu -->
@@ -33,14 +33,17 @@
       <div class="header-icons">
         <i id="search-btn" class="fa fa-search"></i>
         <div class="dropdown">
-          <button class="dropbtn"><i class="fa fa-user"></i></button>
+          <button class="dropbtn">
+            <i class="fa fa-user"></i>
+          </button>
           <div class="dropdown-content">
             <a href="profile.html">Profile</a>
             <a href="settings.html">Settings</a>
             <a href="#" id="logout-btn">Log Out</a>
           </div>
-        </div>            
-        <a href="cart.html"><i class="fa fa-shopping-cart"></i></a>
+        </div>    
+        <a href="chat.html"><i class="fa fa-comment" aria-hidden="true"></i></a>       
+        <a href="checkout.html"><i class="fa fa-shopping-cart"></i></a>
       </div>
     </div>
   </header>
@@ -54,9 +57,11 @@
             <input type="text" id="title" required>
 
             <!-- Image Upload -->
+            <div id="drop-area">
             <label for="image">Upload Image (Max 10 MB):</label>
             <input type="file" id="image" accept="image/*" onchange="previewImage(event)">
-            <img id="image-preview" src="" alt="Image Preview" style="display: none; width: 100px; height: auto; margin-bottom: 10px;">
+            </div>
+            <img id="image-preview" src="" alt="Image Preview" style="display: none;">
 
             <!-- Listing Type Selection -->
             <label for="listing-type">Listing Type:</label>

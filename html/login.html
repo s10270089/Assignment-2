@@ -10,12 +10,6 @@
 <body id="login">
     <header class="inner-header">
         <div class="header-container">
-          <!-- Left: Logo -->
-          <div class="logo">
-            <a href="index.html">
-              <img src="/assets/photos/Logo-bg-removed.png" alt="MokeSell" />
-            </a>
-          </div>
           <!-- Center: Navigation Menu -->
           <nav class="main-nav">
             <ul>
@@ -45,8 +39,22 @@
 
     <main>
         <section id="login-section">
-            <h2>Login</h2>
+          <div class="login-container">
+            <div class="card-container">
+            <div class="logo-container">
+              <div class="logo">
+                <a href="index.html">
+                  <img src="/assets/photos/Logo-bg-removed.png" alt="MokeSell" />
+                </a>
+              </div>
+              <h1 class="mokesell-logo">
+                MOKE<span>S</span>ELL
+              </h1>          
+            
+            </div>
             <form id="login-form">
+              <h2>Log in</h2>
+              <p>continue to MokeSell</p>
                 <label for="login-username">Username:</label>
                 <input type="text" id="login-username" required>
 
@@ -55,12 +63,17 @@
 
                 <button type="submit">Login</button>
             </form>
-        </section>
+            <div class="nav-signup">
+              <p>Dont have an account? <a href="signup.html">Get Started -></a></p>
+            </div>
+          </div>
+        </div>
+      </section>
     </main>
 
-    <footer>
-        <p>&copy; 2025 MokeSell. All rights reserved.</p>
-    </footer>
+    <footer class="footer">
+      <p>&copy; 2024 MokeSell. All Rights Reserved.</p>
+  </footer>
 
     <script type="module" src="https://www.gstatic.com/firebasejs/9.16.0/firebase-app.js"></script>
     <script type="module" src="https://www.gstatic.com/firebasejs/9.16.0/firebase-auth.js"></script>
