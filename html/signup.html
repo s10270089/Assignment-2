@@ -5,35 +5,45 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MokeSell - Sign Up</title>
     <link rel="stylesheet" href="../css/styles.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.9.6/lottie.min.js"></script>
+    <dotlottie-wc src="https://lottie.host/5be5ad90-5da7-45ba-80ed-c4e42dc80059/XJbNwhflTz.lottie" autoplay loop></dotlottie-wc>
 </head>
-<body id="signup">
-    <header class="inner-header">
-        <div class="header-container">
-            <!-- Center: Navigation Menu -->
-            <nav class="main-nav">
-                <ul>
-                    <li><a href="listings.html">Browse</a></li>
-                    <li><a href="upload.html">Sell</a></li>
-                    <li><a href="about.html">About</a></li>
-                </ul>
-            </nav>
-            <!-- Right: Utility Icons -->
-            <div class="header-icons">
-                <i id="search-btn" class="fa fa-search"></i>
-                <div class="dropdown">
-                    <button class="dropbtn">
-                        <i class="fa fa-user"></i>
-                    </button>
-                    <div class="dropdown-content">
-                        <a href="profile.html">Profile</a>
-                        <a href="settings.html">Settings</a>
-                        <a href="#" id="logout-btn">Log Out</a>
-                    </div>
-                </div>            
-                <a href="cart.html"><i class="fa fa-shopping-cart"></i></a>
-            </div>
-        </div>
-    </header>
+<body id="signup" class="inner">
+  <!-- Lottie Loader Overlay -->
+  <div id="lottie-loader"></div>
+  <header class="inner-header" style="display: none;">
+    <div class="header-container">
+      <!-- Left: Logo -->
+      <div class="logo" style="display: none;">
+        <a href="index.html">
+          <img src="/assets/photos/Logo-bg-removed.png" alt="MokeSell">
+        </a>
+      </div>
+      <!-- Center: Navigation Menu -->
+      <nav class="main-nav">
+        <ul>
+          <li><a href="listings.html">Browse</a></li>
+          <li><a href="upload.html">Sell</a></li>
+          <li><a href="about.html">About</a></li>
+        </ul>
+      </nav>
+      <!-- Right: Utility Icons -->
+      <div class="header-icons">
+        <i id="search-btn" class="fa fa-search"></i>
+        <div class="dropdown">
+          <button class="dropbtn">
+            <i class="fa fa-user"></i>
+          </button>
+          <div class="dropdown-content">
+            <a href="profile.html">Profile</a>
+            <a href="settings.html">Settings</a>
+            <a href="#" id="logout-btn">Log Out</a>
+          </div>
+        </div>            
+        <a href="cart.html"><i class="fa fa-shopping-cart"></i></a>
+      </div>
+    </div>
+  </header>
 
     <main>
         <section id="signup-section">
@@ -75,16 +85,32 @@
                         <label for="local-number">Phone Number:</label>
                         <input type="text" id="local-number" required>
 
-                        <button type="submit">Sign Up</button>
+                        <button type="button" id="next-btn">Sign Up</button>
                     </form>
-
+                    <div id="upload-section" style="display: none;">
+                      <img id="image-preview" src="#" alt="Image Preview" style="display: none; justify-self: center;" width="200" height="200">
+                      
+                      <div class="upload-container">
+                          <span class="upload-label">Choose Profile Picture</span>
+                          <input 
+                                  type="file" 
+                                  id="profile-picture" 
+                                  accept="image/*" 
+                                  onchange="previewImage(event)"
+                              >
+                      </div>
+                  
                     <div class="nav-login">
                         <p>Already have an account? <a href="login.html">Login here</a></p>
                     </div>
-                </div>
-            </div>
-        </section>
-    </main>
+                    <div class="button-group">
+                      <button type="button" id="submit-form">Submit</button>
+                      <button type="button" id="skip-upload">Skip</button>
+                  </div>
+              </div>
+            </section>
+        </main>
+    
 
     <footer class="footer">
         <p>&copy; 2024 MokeSell. All Rights Reserved.</p>
@@ -94,5 +120,33 @@
     <script type="module" src="https://www.gstatic.com/firebasejs/9.16.0/firebase-auth.js"></script>
     <script type="module" src="https://www.gstatic.com/firebasejs/9.16.0/firebase-firestore.js"></script>
     <script type="module" src="../js/script.js"></script>
+    <script> 
+    // Function to preview the uploaded image
+        function previewImage(event) {
+         const imagePreview = document.getElementById('image-preview');
+         imagePreview.src = URL.createObjectURL(event.target.files[0]);
+         imagePreview.style.display = 'block';
+       }
+      // Initialize the Lottie animation in the loader container
+      const loaderContainer = document.getElementById('lottie-loader');
+
+      // Load your Lottie JSON animation.
+      const loaderAnimation = lottie.loadAnimation({
+        container: loaderContainer,
+        renderer: 'svg',
+        loop: true,
+        autoplay: true,
+        path: "/assets/icons/lottieloading.json"
+      });
+
+      // When the page has fully loaded, fade out the loader overlay
+      window.addEventListener('load', function () {
+        loaderContainer.style.opacity = 0;
+        // After the fade transition, set display to "none" so it's removed from view
+        setTimeout(() => {
+          loaderContainer.style.display = 'none';
+        }, 500);
+      });
+    </script>
 </body>
 </html>

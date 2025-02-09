@@ -3,11 +3,42 @@
 <head>
     <meta charset="UTF-8">
     <title>Payment Successful</title>
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="/css/styles.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.9.6/lottie.min.js"></script>
+    <dotlottie-wc src="https://lottie.host/5be5ad90-5da7-45ba-80ed-c4e42dc80059/XJbNwhflTz.lottie" autoplay loop></dotlottie-wc>
+
 </head>
-<body>
-    <h1>Payment Successful</h1>
-    <p>Thank you for your purchase!</p>
-    <button onclick="window.location.href='home.html'">Return to Home</button>
+<body id="payment">
+  <!-- Lottie Loader Overlay -->
+  <div id="lottie-loader"></div>
+    <main class="payment-container">
+        <h2>Payment Successful</h2>
+        <p>Thank you for your purchase! Your order has been successfully completed. 
+            You will receive updates regarding shipping and delivery soon.</p>
+        <p>We hope you enjoy your purchase and consider shopping with us again in the future.</p>
+    </main>
+    <button onclick="window.location.href='index.html'" class="cta-button" id="home_button">Return to Home</button>
 </body>
+<script>
+    // Initialize the Lottie animation in the loader container
+    const loaderContainer = document.getElementById('lottie-loader');
+
+   // Load your Lottie JSON animation.
+   const loaderAnimation = lottie.loadAnimation({
+     container: loaderContainer,
+     renderer: 'svg',
+     loop: true,
+     autoplay: true,
+     path: "/assets/icons/lottieloading.json"
+   });
+
+   // When the page has fully loaded, fade out the loader overlay
+   window.addEventListener('load', function () {
+     loaderContainer.style.opacity = 0;
+     // After the fade transition, set display to "none" so it's removed from view
+     setTimeout(() => {
+       loaderContainer.style.display = 'none';
+     }, 500);
+   });
+   </script>
 </html>

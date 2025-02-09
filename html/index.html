@@ -5,8 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MokeSell - Modern Marketplace</title>
     <link rel="stylesheet" href="../css/styles.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.9.6/lottie.min.js"></script>
+    <dotlottie-wc src="https://lottie.host/5be5ad90-5da7-45ba-80ed-c4e42dc80059/XJbNwhflTz.lottie" autoplay loop></dotlottie-wc>
 </head>
 <body id="index">
+  <!-- Lottie Loader Overlay -->
+  <div id="lottie-loader"></div>
     <div class="header-container w-full">
         <header>
             <nav>
@@ -85,5 +89,27 @@
             </div>
         </div>
     </footer>
+    <script>
+        // Initialize the Lottie animation in the loader container
+        const loaderContainer = document.getElementById('lottie-loader');
+   
+       // Load your Lottie JSON animation.
+       const loaderAnimation = lottie.loadAnimation({
+         container: loaderContainer,
+         renderer: 'svg',
+         loop: true,
+         autoplay: true,
+         path: "/assets/icons/lottieloading.json"
+       });
+   
+       // When the page has fully loaded, fade out the loader overlay
+       window.addEventListener('load', function () {
+         loaderContainer.style.opacity = 0;
+         // After the fade transition, set display to "none" so it's removed from view
+         setTimeout(() => {
+           loaderContainer.style.display = 'none';
+         }, 500);
+       });
+       </script>
 </body>
 </html>

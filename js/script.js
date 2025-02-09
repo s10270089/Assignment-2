@@ -2,6 +2,7 @@
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.16.0/firebase-auth.js";
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.16.0/firebase-app.js";
 import { getFirestore, doc, setDoc, getDoc, getDocs, updateDoc, query, where, collection, addDoc, serverTimestamp, orderBy, onSnapshot, limit} from "https://www.gstatic.com/firebasejs/9.16.0/firebase-firestore.js";
+
 // Firebase configuration
 const firebaseConfig = {
   apiKey: "AIzaSyDqYtQAxeSDqaXdReUFdP2goqHfgTj0sNM",
@@ -115,7 +116,6 @@ const saveUserToFirestore = async (user, userData) => {
   }
 };
 
-
 // Page-Specific Functionality
 document.addEventListener("DOMContentLoaded", () => {
   const currentPage = document.body.id;
@@ -197,8 +197,7 @@ document.addEventListener("DOMContentLoaded", () => {
     onAuthStateChanged(auth, (user) => {
       const logoutButton = document.getElementById("logout-btn");
       if (user) {
-        // User is logged in, redirect to home.html
-        window.location.href = "home.html";
+        window.location.href = "listings.html";
       } else {
         // User is not logged in, hide the logout button
         if (logoutButton) {
@@ -253,8 +252,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (user && !isSigningUp) {
         // User is logged in and not in the middle of signing up
         console.log("User is already logged in:", user.uid);
-        signupForm.style.display = "none"; // Hide the signup form
-        window.location.href = "home.html"; // Redirect to home.html
+        window.location.href = "listings.html";
       } else {
         // User is not logged in or is in the middle of signing up
         console.log("User is not logged in. Proceeding with signup.");
@@ -302,7 +300,7 @@ document.addEventListener("DOMContentLoaded", () => {
       return result;
     }
 
-    const signupForm = document.getElementById("signupForm");
+    const signupForm = document.getElementById("signup-form");
     const nextBtn = document.getElementById("next-btn");
     const uploadSection = document.getElementById("upload-section");
     const submitBtn = document.getElementById("submit-form");
